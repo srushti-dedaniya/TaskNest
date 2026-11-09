@@ -1,0 +1,17 @@
+# Created by https://www.gitignore.io/api/node,macos,visualstudiocode
+# Edit at https://www.gitignore.io?templates=node,macos,visualstudiocode
+
+### Node ###
+node_modules/
+dist/
+.vite/
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.*
+!.env.example
+.DS_Store
+coverage/

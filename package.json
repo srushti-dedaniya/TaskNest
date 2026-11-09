@@ -1,0 +1,12 @@
+{
+  "name": "tasknest",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "test:backend": "npm --prefix backend test",
+    "seed": "npm --prefix backend run seed"
+  }
+}

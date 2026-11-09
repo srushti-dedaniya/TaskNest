@@ -1,0 +1,6 @@
+export const LOGOUT_PATH = '/login'
+
+export const NAV_ENTRY = {
+  admin: '/admin/overview',
+  intern: '/intern/dashboard'
+}

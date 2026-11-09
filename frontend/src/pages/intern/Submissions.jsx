@@ -1,0 +1,219 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { submissionService } from '../../services/api.js'
+
+export default function Submissions() {
+  const [filter, setFilter] = useState('all')
+  const [submissions, setSubmissions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+
+  const loadSubmissions = async () => {
+    try {
+      setLoading(true)
+      setLoadError('')
+      const res = await submissionService.list()
+      setSubmissions(
+        (res?.submissions ?? []).map((s) => ({
+          id: s._id || s.id,
+          taskId: s.task?._id || s.task,
+          taskCode: s.task?.code || `SPEC-${(s.task?._id || s._id || '').slice(-4).toUpperCase() || '0841'}`,
+          taskTitle: s.task?.title || 'Distributed Monograph Deliverable',
+          status:
+            s.status === 'approved'
+              ? 'Approved'
+              : s.status === 'rejected'
+              ? 'Rejected'
+              : 'Under Review',
+          submittedAt: s.submittedAt || new Date().toISOString(),
+          pointsAwarded: s.review?.pointsAwarded ?? null,
+          pointsAvailable: s.task?.points ?? 450,
+          feedback: s.review?.feedback ?? null,
+          repoUrl: s.repoUrl || '',
+          notes: s.notes || ''
+        }))
+      )
+    } catch (err) {
+      console.warn('[Submissions] API load failed:', err.message)
+      setLoadError(err.message || 'Could not load your submissions.')
+      setSubmissions([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadSubmissions()
+  }, [])
+
+  const filtered = submissions.filter((sub) => {
+    if (filter === 'all') return true
+    if (filter === 'review') return sub.status === 'Under Review' || sub.status === 'Pending'
+    if (filter === 'approved') return sub.status === 'Approved'
+    return true
+  })
+
+  return (
+    <div className="space-y-8">
+      {/* Editorial Header */}
+      <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-outline-variant/30 pb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-2 h-2 rounded-full bg-secondary" />
+            <span className="font-label-xs-caps text-[11px] uppercase tracking-[0.2em] text-secondary font-semibold">
+              Dispatch Ledger // Fellowship Archive
+            </span>
+          </div>
+          <h1 className="font-headline-lg text-3xl md:text-5xl text-primary tracking-tight font-medium">
+            My Submissions
+          </h1>
+          <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
+            Audit your submitted work, review faculty comments, track awarded experience points, and inspect verification artifacts.
+          </p>
+        </div>
+
+        <Link
+          to="/intern/daily-tasks"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-sm self-start lg:self-end"
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          <span>Submit Another Task</span>
+        </Link>
+      </section>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 p-1.5 bg-surface-container rounded-full w-fit border border-outline-variant/20">
+        {[
+          { id: 'all', label: 'All Submissions' },
+          { id: 'review', label: 'Under Review' },
+          { id: 'approved', label: 'Approved & Awarded' }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setFilter(tab.id)}
+            className={`px-4 py-1.5 rounded-full font-label-xs-caps text-[11px] uppercase tracking-wider transition-all ${
+              filter === tab.id
+                ? 'bg-primary text-on-primary shadow-xs font-semibold'
+                : 'text-on-surface-variant hover:text-primary'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Submissions List */}
+      <div className="space-y-4">
+        {loading ? (
+          <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+            <span>Querying Fellow Dispatch Ledger...</span>
+          </div>
+        ) : loadError ? (
+          <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span>{loadError}</span>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-surface-bright rounded-3xl p-16 text-center border border-outline-variant/20 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)]">
+            <span className="material-symbols-outlined text-4xl text-outline-variant">
+              history_edu
+            </span>
+            <h3 className="font-headline-sm text-lg text-primary mt-2">No submissions recorded</h3>
+            <p className="text-xs text-on-surface-variant mt-1">
+              Select an assigned daily task to dispatch your verification bundle.
+            </p>
+          </div>
+        ) : (
+          filtered.map((sub) => (
+            <div
+              key={sub.id}
+              className="p-6 md:p-8 rounded-3xl bg-surface-bright shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-4 group hover:border-secondary/40 transition-all"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-outline-variant/20">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="font-mono text-xs font-semibold px-2.5 py-0.5 rounded-full bg-surface-container-high text-secondary">
+                    {sub.taskCode}
+                  </span>
+                  <span
+                    className={`px-3 py-0.5 rounded-full font-label-xs-caps text-[11px] uppercase font-semibold ${
+                      sub.status === 'Approved'
+                        ? 'bg-primary text-on-primary shadow-xs'
+                        : sub.status === 'Rejected'
+                        ? 'bg-error-container text-on-error-container'
+                        : 'bg-secondary-container text-on-secondary-container'
+                    }`}
+                  >
+                    {sub.status}
+                  </span>
+                  <span className="text-xs text-on-surface-variant">
+                    Dispatched: {new Date(sub.submittedAt).toLocaleDateString()}
+                  </span>
+                </div>
+
+                {sub.pointsAwarded !== null && sub.pointsAwarded !== undefined ? (
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-xs font-bold">
+                    <span className="material-symbols-outlined text-[16px] text-secondary">military_tech</span>
+                    <span>+{sub.pointsAwarded} XP Awarded</span>
+                  </div>
+                ) : (
+                  <span className="text-xs text-on-surface-variant font-medium">
+                    +{sub.pointsAvailable} XP Pending Review
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-headline-sm text-xl text-primary font-medium group-hover:text-secondary transition-colors">
+                  {sub.taskTitle}
+                </h3>
+                <p className="font-body-md text-xs sm:text-sm text-on-surface-variant mt-2 leading-relaxed bg-surface-container-low p-4 rounded-2xl border border-outline-variant/10">
+                  <strong className="text-primary font-mono text-xs">Submission Field Notes:</strong>
+                  <br />
+                  "{sub.notes}"
+                </p>
+              </div>
+
+              {sub.feedback && (
+                <div className="p-4 rounded-2xl bg-surface-container border border-outline-variant/20 space-y-1">
+                  <div className="flex items-center gap-1.5 text-secondary text-xs font-semibold font-label-xs-caps uppercase tracking-wider">
+                    <span className="material-symbols-outlined text-[16px]">gavel</span>
+                    <span>Faculty Evaluation &amp; Critique</span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant italic leading-relaxed">
+                    "{sub.feedback}"
+                  </p>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-2">
+                <span>
+                  {sub.repoUrl ? (
+                    <a
+                      href={sub.repoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-secondary hover:underline font-medium"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">code</span>
+                      <span>View Repository Commit</span>
+                    </a>
+                  ) : null}
+                </span>
+
+                <Link
+                  to={`/intern/submissions/${sub.id}`}
+                  className="px-4 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-xs font-label-md text-primary transition-colors border border-outline-variant/30 flex items-center gap-1"
+                >
+                  <span>Monograph Codex</span>
+                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </Link>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
