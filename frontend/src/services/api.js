@@ -54,14 +54,25 @@ apiClient.interceptors.response.use(
       }
     }
 
-    const message =
+    const baseMessage =
       error.response?.data?.message ||
       error.response?.data?.error ||
       error.message ||
       'An unexpected error occurred'
+
+    let message = baseMessage
+    const details = error.response?.data?.details
+    if (Array.isArray(details) && details.length > 0) {
+      const fieldErrors = details.map((d) => d.message || `${d.field}: invalid`).join('. ')
+      message = `${baseMessage}: ${fieldErrors}`
+    } else if (typeof details === 'string' && details !== baseMessage) {
+      message = `${baseMessage}: ${details}`
+    }
+
     const customError = new Error(message)
     customError.status = status
     customError.data = error.response?.data
+    customError.details = details
     return Promise.reject(customError)
   }
 )

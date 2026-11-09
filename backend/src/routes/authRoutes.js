@@ -33,6 +33,7 @@ const authLimiter = createRateLimiter({
 })
 
 router.post('/register', authLimiter, validate(registerSchema), register)
+router.get('/verify-email', verifyLimiter, verifyEmail)
 router.post('/verify-email', verifyLimiter, validate(verifyEmailSchema), verifyEmail)
 router.post('/resend-verification', resendLimiter, validate(resendVerificationSchema), resendVerification)
 router.post('/login', authLimiter, validate(loginSchema), login)

@@ -6,20 +6,53 @@ import { useAuth } from '../../context/AuthContext.jsx'
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
+  const queryStatus = searchParams.get('status')
+  const queryError = searchParams.get('error')
+  const queryEmail = searchParams.get('email') || ''
+
   const navigate = useNavigate()
   const { login } = useAuth()
 
-  const [status, setStatus] = useState('validating') // 'validating' | 'success' | 'error'
+  const [status, setStatus] = useState(queryStatus === 'success' ? 'success' : 'validating') // 'validating' | 'success' | 'error'
   const [errorMessage, setErrorMessage] = useState('')
   const [user, setUser] = useState(null)
+  const [countdown, setCountdown] = useState(3)
 
   // Resend state for failed/expired tokens
-  const [resendEmail, setResendEmail] = useState('')
+  const [resendEmail, setResendEmail] = useState(queryEmail)
   const [resending, setResending] = useState(false)
   const [resendMsg, setResendMsg] = useState('')
   const [resendError, setResendError] = useState('')
 
   useEffect(() => {
+    // If backend already verified via GET redirect
+    if (queryStatus === 'success') {
+      setStatus('success')
+      const queryJwt = searchParams.get('jwt')
+      if (queryJwt) {
+        localStorage.setItem('tasknest_token', queryJwt)
+      }
+      authService.me().then((res) => {
+        if (res?.user) {
+          setUser(res.user)
+          login(res.user, queryJwt || null)
+        }
+      }).catch(() => {})
+      return
+    }
+
+    if (queryError) {
+      setStatus('error')
+      if (queryError === 'expired_token') {
+        setErrorMessage('The verification challenge has expired. Please request a new verification monograph below.')
+      } else if (queryError === 'missing_token') {
+        setErrorMessage('No verification token provided in the challenge URL.')
+      } else {
+        setErrorMessage('This verification link is invalid or has already been consumed.')
+      }
+      return
+    }
+
     async function executeVerification() {
       if (!token) {
         setStatus('error')
@@ -46,7 +79,18 @@ export default function VerifyEmail() {
     }
 
     executeVerification()
-  }, [token])
+  }, [token, queryStatus, queryError])
+
+  // Automatic redirect countdown on successful verification
+  useEffect(() => {
+    let timer
+    if (status === 'success' && countdown > 0) {
+      timer = setTimeout(() => setCountdown((c) => c - 1), 1000)
+    } else if (status === 'success' && countdown <= 0) {
+      navigate('/intern/dashboard')
+    }
+    return () => clearTimeout(timer)
+  }, [status, countdown, navigate])
 
   const handleResend = async (e) => {
     e.preventDefault()
@@ -139,12 +183,17 @@ export default function VerifyEmail() {
                   </div>
                 )}
 
-                <div className="pt-4">
+                <div className="flex items-center justify-center gap-2 text-xs text-secondary font-label-xs-caps uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                  <span>Redirecting to atelier workspace in {countdown}s...</span>
+                </div>
+
+                <div className="pt-2">
                   <Link
                     to="/intern/dashboard"
                     className="w-full py-4 px-8 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-sm transition-all shadow-md inline-flex items-center justify-center gap-2"
                   >
-                    <span>Enter Fellow Atelier Workspace</span>
+                    <span>Enter Fellow Atelier Workspace Now</span>
                     <span className="material-symbols-outlined text-base">arrow_forward</span>
                   </Link>
                 </div>

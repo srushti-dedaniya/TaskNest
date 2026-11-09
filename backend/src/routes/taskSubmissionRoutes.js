@@ -28,7 +28,7 @@ router.get('/submissions/:submissionId', subs.getSubmission)
 router.post(
   '/submissions/:submissionId/review',
   requireAdmin,
-  validate(z.object({ decision: z.enum(['approved', 'rejected']), feedback: z.string().trim().min(5, 'Feedback is required').max(3000), pointsAwarded: z.number().int().min(0).optional() })),
+  validate(z.object({ decision: z.enum(['approved', 'rejected']), feedback: z.string().trim().min(1, 'Feedback is required').max(3000), pointsAwarded: z.coerce.number().int().min(0).optional() })),
   reviews.evaluateSubmission
 )
 

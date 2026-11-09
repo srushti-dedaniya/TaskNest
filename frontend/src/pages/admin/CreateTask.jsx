@@ -30,6 +30,7 @@ export default function CreateTask() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   useEffect(() => {
     async function loadInterns() {
@@ -72,16 +73,34 @@ export default function CreateTask() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
 
-    if (!title.trim() || !description.trim()) {
-      setError('Please provide a task title and comprehensive monograph description.')
+    const errors = {}
+    if (!title.trim()) {
+      errors.title = 'Please provide a deliverable title.'
+    }
+    if (!description.trim()) {
+      errors.description = 'Please provide monograph guidelines/description.'
+    }
+
+    let parsedDeadline
+    try {
+      const d = new Date(deadline)
+      if (isNaN(d.getTime())) throw new Error()
+      parsedDeadline = d.toISOString()
+    } catch {
+      errors.deadline = 'Please provide a valid canonical deadline.'
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setError(Object.values(errors).join(' '))
       return
     }
 
     setSubmitting(true)
     try {
       const isAll = assignedTo === 'all'
-      // If assignedTo is an ID that is not a valid 24-char hex mongo ObjectId (like usr-001 from mock), broadcast to all
       const isValidMongoId = typeof assignedTo === 'string' && /^[0-9a-fA-F]{24}$/.test(assignedTo)
 
       await taskService.create({
@@ -92,7 +111,7 @@ export default function CreateTask() {
         type: scope.toLowerCase() === 'weekly' ? 'weekly' : 'daily',
         priority: priority.toLowerCase(),
         points: Number(points),
-        deadline: new Date(deadline).toISOString(),
+        deadline: parsedDeadline,
         assignment: {
           mode: isAll || !isValidMongoId ? 'all' : 'individual',
           interns: !isAll && isValidMongoId ? [assignedTo] : []
@@ -105,6 +124,14 @@ export default function CreateTask() {
       }, 1000)
     } catch (err) {
       console.warn('[CreateTask] Error dispatching task:', err.message)
+      const details = err.data?.details || err.details
+      if (Array.isArray(details)) {
+        const mapped = {}
+        details.forEach((d) => {
+          if (d.field) mapped[d.field] = d.message
+        })
+        setFieldErrors(mapped)
+      }
       setError(err.message || 'Failed to dispatch task.')
     } finally {
       setSubmitting(false)
@@ -231,28 +258,44 @@ export default function CreateTask() {
             </div>
 
             <div>
-              <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                Deliverable Title *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
+                  Deliverable Title *
+                </label>
+                {fieldErrors.title && <span className="text-xs text-error font-medium">{fieldErrors.title}</span>}
+              </div>
               <input
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl bg-surface-container-high/60 text-sm text-primary border border-outline-variant/30 focus:outline-none focus:bg-surface-container-lowest font-medium"
+                onChange={(e) => {
+                  setTitle(e.target.value)
+                  if (fieldErrors.title) setFieldErrors((prev) => ({ ...prev, title: null }))
+                }}
+                className={`w-full h-11 px-4 rounded-xl bg-surface-container-high/60 text-sm text-primary border ${
+                  fieldErrors.title ? 'border-error ring-1 ring-error/40' : 'border-outline-variant/30'
+                } focus:outline-none focus:bg-surface-container-lowest font-medium transition-all`}
                 placeholder="e.g. Implement Raft Consensus Leader Election Protocol"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                Architectural Abstract &amp; Monograph Guidelines *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
+                  Architectural Abstract &amp; Monograph Guidelines *
+                </label>
+                {fieldErrors.description && <span className="text-xs text-error font-medium">{fieldErrors.description}</span>}
+              </div>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value)
+                  if (fieldErrors.description) setFieldErrors((prev) => ({ ...prev, description: null }))
+                }}
                 rows={4}
-                className="w-full p-4 rounded-2xl bg-surface-container-high/60 text-sm text-primary border border-outline-variant/30 focus:outline-none focus:bg-surface-container-lowest"
+                className={`w-full p-4 rounded-2xl bg-surface-container-high/60 text-sm text-primary border ${
+                  fieldErrors.description ? 'border-error ring-1 ring-error/40' : 'border-outline-variant/30'
+                } focus:outline-none focus:bg-surface-container-lowest transition-all`}
                 placeholder="Detail the technical expectations, formal invariants, algorithms, and documentation requirements..."
                 required
               />
@@ -425,14 +468,22 @@ export default function CreateTask() {
 
             {/* Deadline */}
             <div>
-              <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                Canonical Deadline
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
+                  Canonical Deadline
+                </label>
+                {fieldErrors.deadline && <span className="text-xs text-error font-medium">{fieldErrors.deadline}</span>}
+              </div>
               <input
                 type="datetime-local"
                 value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none"
+                onChange={(e) => {
+                  setDeadline(e.target.value)
+                  if (fieldErrors.deadline) setFieldErrors((prev) => ({ ...prev, deadline: null }))
+                }}
+                className={`w-full h-11 px-3 rounded-xl bg-surface-container-high/60 text-xs text-primary border ${
+                  fieldErrors.deadline ? 'border-error ring-1 ring-error/40' : 'border-outline-variant/30'
+                } focus:outline-none transition-all`}
               />
             </div>
 

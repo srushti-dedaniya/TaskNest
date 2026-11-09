@@ -52,8 +52,13 @@ export const register = asyncHandler(async (req, res) => {
 })
 
 export const verifyEmail = asyncHandler(async (req, res) => {
-  const { token } = req.body
+  const token = req.body?.token || req.query?.token
+  const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
+
   if (!token || typeof token !== 'string') {
+    if (req.method === 'GET') {
+      return res.redirect(`${clientUrl}/verify-email?error=missing_token`)
+    }
     throw ApiError.badRequest('Verification token is required')
   }
 
@@ -64,10 +69,16 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   }).select('+emailVerification.tokenHash +emailVerification.expiresAt')
 
   if (!user) {
+    if (req.method === 'GET') {
+      return res.redirect(`${clientUrl}/verify-email?error=invalid_token`)
+    }
     throw ApiError.badRequest('Verification token is invalid or has already been used.')
   }
 
   if (user.emailVerification?.expiresAt && user.emailVerification.expiresAt < new Date()) {
+    if (req.method === 'GET') {
+      return res.redirect(`${clientUrl}/verify-email?error=expired_token&email=${encodeURIComponent(user.email)}`)
+    }
     throw ApiError.badRequest('Verification token has expired. Please request a new verification link.')
   }
 
@@ -81,6 +92,10 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 
   const authToken = signAccessToken(user)
   setAuthCookies(res, user)
+
+  if (req.method === 'GET') {
+    return res.redirect(`${clientUrl}/verify-email?status=success&token=${encodeURIComponent(token.trim())}&jwt=${encodeURIComponent(authToken)}`)
+  }
 
   res.json({
     message: 'Institutional email successfully verified. Fellowship enclave access granted.',

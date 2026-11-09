@@ -64,8 +64,10 @@ function baseHtmlTemplate({ title, preheader, bodyHtml, ctaText, ctaUrl, footerN
 
 export const emailService = {
   sendVerificationEmail: async (user, rawToken) => {
-    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:5173'
-    const verificationUrl = `${clientUrl}/verify-email?token=${rawToken}`
+    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
+    const serverUrl = process.env.SERVER_URL || 'http://localhost:5000'
+    const verificationUrl = `${clientUrl}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`
+    const directApiUrl = `${serverUrl}/api/auth/verify-email?token=${rawToken}`
 
     const subject = 'TaskNest — Verify Your Institutional Email Address'
     const title = 'Verify Fellowship Enclave Access'
@@ -81,20 +83,20 @@ export const emailService = {
     return sendEmail({
       to: user.email,
       subject,
-      text: `Hello ${user.name},\n\nPlease verify your TaskNest fellowship email by clicking this link:\n${verificationUrl}\n\nThis verification link is valid for 24 hours.`,
+      text: `Hello ${user.name},\n\nPlease verify your TaskNest fellowship email by clicking this link:\n${verificationUrl}\n\nDirect verification URL:\n${directApiUrl}\n\nThis verification link is valid for 24 hours.`,
       html: baseHtmlTemplate({
         title,
         preheader,
         bodyHtml,
         ctaText: 'Verify Fellowship Email Access →',
         ctaUrl: verificationUrl,
-        footerNote: 'TaskNest Identity & Enclave Access // Token SEC-256 Validated',
+        footerNote: `TaskNest Identity & Enclave Access // Token SEC-256 Validated • Direct API link: ${directApiUrl}`,
       }),
     })
   },
 
   sendWelcome: async (user) => {
-    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:5173'
+    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const dashboardUrl = `${clientUrl}/intern/dashboard`
 
     return sendEmail({
@@ -116,7 +118,7 @@ export const emailService = {
   },
 
   sendTaskAssigned: async (user, task) => {
-    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:5173'
+    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const taskUrl = `${clientUrl}/intern/tasks/${task._id || task.id}`
 
     return sendEmail({
@@ -143,7 +145,7 @@ export const emailService = {
   },
 
   sendSubmissionReceived: async (recipient, task, internName) => {
-    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:5173'
+    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const queueUrl = `${clientUrl}/admin/submissions`
 
     return sendEmail({
@@ -164,7 +166,7 @@ export const emailService = {
   },
 
   sendReviewEvaluated: async (user, task, review) => {
-    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:5173'
+    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const pointsUrl = `${clientUrl}/intern/points`
     const isApproved = review.decision === 'approved'
 
@@ -199,7 +201,7 @@ export const emailService = {
   },
 
   sendPasswordReset: async (user, resetToken) => {
-    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:5173'
+    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`
 
     return sendEmail({

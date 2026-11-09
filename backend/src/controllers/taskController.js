@@ -18,7 +18,7 @@ async function buildAssignments(task) {
   const interns =
     task.assignment.mode === 'all'
       ? await User.find({ role: 'intern' }).select('_id')
-      : await User.find({ _id: { $in: task.assignment.interns }, role: 'intern' }).select('_id')
+      : await User.find({ _id: { $in: (task.assignment.interns || []).filter((id) => id && /^[0-9a-fA-F]{24}$/.test(String(id))) }, role: 'intern' }).select('_id')
   task.assignments = interns.map((u) => ({ intern: u._id, status: 'assigned' }))
   task.assignment.interns = task.assignments.map((a) => a.intern)
 }

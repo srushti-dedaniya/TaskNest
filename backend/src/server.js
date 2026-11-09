@@ -1,5 +1,10 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
+dotenv.config()
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
@@ -40,7 +45,32 @@ async function start() {
       throw new Error('JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be set in environment')
     }
     await connectDatabase()
-    return app.listen(PORT, () => console.log(`[api] TaskNest API listening on http://localhost:${PORT}`))
+    // Optional legacy port forwarder (5173 -> 3000) so verification email links dispatched to 5173 forward to 3000
+    let server
+    let forwarder
+    try {
+      const httpModule = await import('node:http')
+      forwarder = httpModule.default.createServer((req, res) => {
+        const host = req.headers.host ? req.headers.host.split(':')[0] : 'localhost'
+        res.writeHead(302, { Location: `http://${host}:3000${req.url}`, 'Access-Control-Allow-Origin': '*' })
+        res.end()
+      })
+      forwarder.on('error', (e) => console.log('[forwarder-5173] note:', e.message))
+      forwarder.listen(5173, () => console.log('[forwarder-5173] Active: http://localhost:5173 -> http://localhost:3000'))
+    } catch (e) {
+      // ignore
+    }
+
+    server = app.listen(PORT, () => console.log(`[api] TaskNest API listening on http://localhost:${PORT}`))
+
+    const shutdown = () => {
+      if (forwarder) forwarder.close()
+      if (server) server.close()
+    }
+    process.once('SIGINT', shutdown)
+    process.once('SIGTERM', shutdown)
+
+    return server
   } catch (err) {
     console.error('[fatal] Could not start server:', err.message)
     process.exit(1)
