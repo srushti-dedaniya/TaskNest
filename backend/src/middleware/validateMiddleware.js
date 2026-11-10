@@ -8,7 +8,8 @@ export function validate(schema, source = 'body') {
         field: i.path.join('.') || '_',
         message: i.message,
       }))
-      return next(ApiError.badRequest('Validation failed', details))
+      const summaryMsg = details.map((d) => d.message).join('; ')
+      return next(ApiError.badRequest(summaryMsg ? `Validation failed: ${summaryMsg}` : 'Validation failed', details))
     }
     req[source] = result.data
     next()

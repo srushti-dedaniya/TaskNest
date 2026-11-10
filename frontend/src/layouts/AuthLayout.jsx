@@ -13,7 +13,7 @@ export default function AuthLayout({ children }) {
           <div className="flex items-baseline gap-1.5">
             <span className="font-headline-sm text-2xl text-primary font-medium tracking-tight">TaskNest</span>
             <span className="font-label-xs-caps text-[10px] text-secondary uppercase tracking-widest hidden sm:inline">
-              Fellowship Portal
+              Internship Portal
             </span>
           </div>
         </Link>
@@ -34,7 +34,7 @@ export default function AuthLayout({ children }) {
 
       {/* Footer */}
       <footer className="w-full py-4 text-center font-label-xs-caps text-[11px] text-on-surface-variant uppercase tracking-widest border-t border-outline-variant/20">
-        TaskNest • Editorial Monograph Protocol • Fellowship Architecture
+        TaskNest • Task Management &amp; Intern Performance Portal
       </footer>
     </div>
   )

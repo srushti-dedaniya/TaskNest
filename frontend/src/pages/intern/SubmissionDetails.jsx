@@ -92,7 +92,7 @@ export default function SubmissionDetails() {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
           <div className="max-w-3xl">
             <span className="font-label-xs-caps text-label-xs-caps uppercase tracking-[0.2em] text-secondary font-semibold">
-              Dispatch Ledger // Deliverable Monograph
+              Intern Portal // Submission Details
             </span>
             <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mt-1 mb-2">
               {taskTitle}
@@ -114,7 +114,7 @@ export default function SubmissionDetails() {
               <div className="flex items-center gap-2 pb-space-md border-b border-outline-variant/20 mb-4">
                 <span className="material-symbols-outlined text-secondary text-[20px]">link</span>
                 <span className="font-label-xs-caps text-label-xs-caps uppercase tracking-widest text-on-surface-variant font-semibold">
-                  Submitted References & Artifacts
+                  Submitted Links &amp; Repository
                 </span>
               </div>
               <div className="space-y-space-sm">

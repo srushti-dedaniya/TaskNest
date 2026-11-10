@@ -102,10 +102,10 @@ export default function ForgotPassword() {
 
             <div className="space-y-2 mb-6">
               <h1 className="font-headline-lg text-3xl sm:text-4xl text-primary tracking-tight font-normal">
-                Reset Enclave Passphrase
+                Reset Your Password
               </h1>
               <p className="font-body-md text-sm text-on-surface-variant max-w-2xl leading-relaxed">
-                Initiate cryptographic identity recovery for your fellow dossier or faculty workstation through institutional single sign-on and hardware key challenge.
+                Enter your registered email address to receive secure password reset instructions.
               </p>
               {message && (
                 <div className="mt-3 p-3.5 rounded-xl bg-secondary-container text-on-secondary-container text-xs font-medium flex items-center gap-2">
@@ -120,26 +120,24 @@ export default function ForgotPassword() {
               <button
                 type="button"
                 onClick={() => setMode('email')}
-                className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-title-md text-xs sm:text-sm transition-all ${
-                  mode === 'email'
+                className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-title-md text-xs sm:text-sm transition-all ${mode === 'email'
                     ? 'bg-surface-bright shadow-sm text-primary font-semibold'
                     : 'text-on-surface-variant hover:text-primary'
-                }`}
+                  }`}
               >
                 <span className="material-symbols-outlined text-[18px] text-secondary">mark_email_read</span>
-                <span>Institutional Dispatch</span>
+                <span>Email Reset</span>
               </button>
               <button
                 type="button"
                 onClick={() => setMode('hardware')}
-                className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-title-md text-xs sm:text-sm transition-all ${
-                  mode === 'hardware'
+                className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-title-md text-xs sm:text-sm transition-all ${mode === 'hardware'
                     ? 'bg-surface-bright shadow-sm text-primary font-semibold'
                     : 'text-on-surface-variant hover:text-primary'
-                }`}
+                  }`}
               >
                 <span className="material-symbols-outlined text-[18px]">token</span>
-                <span>Hardware Enclave Key</span>
+                <span>Security Key</span>
               </button>
             </div>
 
@@ -149,9 +147,9 @@ export default function ForgotPassword() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="font-label-xs-caps text-xs text-primary uppercase tracking-wide font-semibold">
-                      Institutional Email Identifier
+                      Account Email Address
                     </label>
-                    <span className="font-label-xs-caps text-[10px] text-secondary">SSO DOMAIN VERIFIED</span>
+                    <span className="font-label-xs-caps text-[10px] text-secondary">VERIFIED DOMAIN</span>
                   </div>
                   <div className="relative">
                     <input
@@ -159,7 +157,7 @@ export default function ForgotPassword() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      placeholder="fellow@tasknest.org"
+                      placeholder="intern@tasknest.org"
                       className="w-full bg-surface-container-high/60 focus:bg-surface-container-lowest text-primary text-sm px-4 py-2.5 rounded-xl outline-none border border-outline-variant/30"
                     />
                     <span className="absolute right-3.5 top-2.5 text-secondary material-symbols-outlined text-lg">
@@ -167,7 +165,7 @@ export default function ForgotPassword() {
                     </span>
                   </div>
                   <p className="font-body-sm text-xs text-on-surface-variant mt-1">
-                    A temporary time-locked recovery monograph will be transmitted to this enclave address.
+                    A secure password reset link will be sent to your email address.
                   </p>
                 </div>
 

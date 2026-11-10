@@ -75,14 +75,14 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
             <span className="font-label-xs-caps text-[11px] uppercase tracking-[0.2em] text-secondary font-semibold">
-              Governance &amp; Oversight // Sprint 04
+              Faculty Dashboard
             </span>
           </div>
           <h1 className="font-headline-lg text-3xl md:text-5xl text-primary tracking-tight font-medium">
-            Ops Overview
+            Faculty Overview
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Cohort 09 · {stats?.interns ?? 0} Fellows active · {tasks.length} deliverables operational. Real-time review queue and grading cadence.
+            {stats?.interns ?? 0} Interns active · {tasks.length} tasks assigned. Review submissions and track intern progress.
           </p>
         </div>
 
@@ -90,17 +90,31 @@ export default function AdminDashboard() {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/admin/tasks/create"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-sm"
           >
             <span className="material-symbols-outlined text-[18px]">add_task</span>
-            <span>Assign New Task</span>
+            <span>Assign Task</span>
           </Link>
           <Link
             to="/admin/submissions"
             className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30"
           >
             <span className="material-symbols-outlined text-[18px]">rate_review</span>
-            <span>Review Queue ({pendingReviews.length})</span>
+            <span>Submissions ({pendingReviews.length})</span>
+          </Link>
+          <Link
+            to="/admin/profile"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30"
+          >
+            <span className="material-symbols-outlined text-[18px]">account_circle</span>
+            <span>Profile</span>
+          </Link>
+          <Link
+            to="/admin/settings"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30"
+          >
+            <span className="material-symbols-outlined text-[18px]">settings</span>
+            <span>Settings</span>
           </Link>
         </div>
       </section>
@@ -117,23 +131,23 @@ export default function AdminDashboard() {
         <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors">
           <div className="flex items-center justify-between text-on-surface-variant mb-2">
             <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
-              Dispatches Active
+              Active Tasks
             </span>
-            <span className="material-symbols-outlined text-secondary text-[20px]">send_time_extension</span>
+            <span className="material-symbols-outlined text-secondary text-[20px]">assignment</span>
           </div>
           <div className="font-display text-4xl text-primary font-medium tracking-tight">
             {tasks.length}
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-xs text-secondary font-medium">
             <span className="material-symbols-outlined text-[14px]">trending_up</span>
-            <span>Across all active cohorts</span>
+            <span>Assigned across interns</span>
           </div>
         </div>
 
         <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors">
           <div className="flex items-center justify-between text-on-surface-variant mb-2">
             <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
-              Review Queue Depth
+              Pending Reviews
             </span>
             <span className="material-symbols-outlined text-secondary text-[20px]">hourglass_empty</span>
           </div>
@@ -141,29 +155,31 @@ export default function AdminDashboard() {
             {pendingReviews.length}
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
-            <span>SLA Target: 6 Hours Turnaround</span>
+            <span>Awaiting review</span>
           </div>
         </div>
 
         <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors">
           <div className="flex items-center justify-between text-on-surface-variant mb-2">
             <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
-              First-Pass Rate
+              Approval Rate
             </span>
             <span className="material-symbols-outlined text-secondary text-[20px]">verified</span>
           </div>
           <div className="font-display text-4xl text-primary font-medium tracking-tight">
-            94.6%
+            {submissions.length > 0
+              ? `${Math.round((submissions.filter((s) => s.status === 'approved').length / submissions.length) * 100)}%`
+              : '100%'}
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
-            <span>Sprint 01–04 blended</span>
+            <span>Submissions approved</span>
           </div>
         </div>
 
         <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors">
           <div className="flex items-center justify-between text-on-surface-variant mb-2">
             <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
-              Fellows Enrolled
+              Interns Active
             </span>
             <span className="material-symbols-outlined text-secondary text-[20px]">groups</span>
           </div>
@@ -171,7 +187,7 @@ export default function AdminDashboard() {
             {stats?.interns ?? 0}
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
-            <span>Verified Atelier Cohort</span>
+            <span>Registered Interns</span>
           </div>
         </div>
       </section>
@@ -235,10 +251,10 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="font-label-xs-caps text-[11px] uppercase tracking-wider text-secondary font-semibold">
-                  Awaiting Faculty Grading
+                  Awaiting Review
                 </span>
                 <h3 className="font-headline-sm text-xl text-primary font-medium mt-0.5">
-                  Live Review Queue
+                  Recent Submissions
                 </h3>
               </div>
               <Link
@@ -251,15 +267,15 @@ export default function AdminDashboard() {
 
             {pendingReviews.length === 0 ? (
               <div className="py-8 text-center text-xs text-on-surface-variant">
-                Queue is clear. No deliverables awaiting faculty review.
+                Queue is clear. No submissions awaiting review.
               </div>
             ) : (
               <div className="divide-y divide-outline-variant/20 space-y-3">
                 {pendingReviews.slice(0, 4).map((sub) => {
                   const id = sub._id || sub.id
-                  const code = sub.task?.code || sub.taskCode || `SPEC-${(id || '').slice(-4).toUpperCase()}`
-                  const title = sub.task?.title || sub.taskTitle || 'Consensus Deliverable'
-                  const internName = sub.intern?.name || sub.internName || 'Fellow'
+                  const code = sub.task?.code || sub.taskCode || `TASK-${(id || '').slice(-4).toUpperCase()}`
+                  const title = sub.task?.title || sub.taskTitle || 'Task'
+                  const internName = sub.intern?.name || sub.internName || 'Intern'
                   return (
                     <div key={id} className="pt-3 flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -280,7 +296,7 @@ export default function AdminDashboard() {
                         to={`/admin/submissions/${id}/review`}
                         className="px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-label-md hover:bg-primary-container shrink-0 transition-colors shadow-xs"
                       >
-                        Grade
+                        Review
                       </Link>
                     </div>
                   )
@@ -290,8 +306,8 @@ export default function AdminDashboard() {
           </div>
 
           <div className="mt-6 pt-4 border-t border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
-            <span>Faculty Review SLA</span>
-            <span className="font-mono text-secondary font-semibold">98.2% on target</span>
+            <span>Faculty Review Progress</span>
+            <span className="font-mono text-secondary font-semibold">Active</span>
           </div>
         </div>
       </div>

@@ -75,5 +75,5 @@ export const evaluateSubmission = asyncHandler(async (req, res) => {
     })
   }
 
-  res.status(201).json({ review })
+  res.status(201).json({ review, submission: sub })
 })

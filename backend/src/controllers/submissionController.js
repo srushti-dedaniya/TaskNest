@@ -68,7 +68,7 @@ export const createSubmission = asyncHandler(async (req, res) => {
 export const listMySubmissions = asyncHandler(async (req, res) => {
   const subs = await Submission.find({ intern: req.user._id })
     .sort({ submittedAt: -1 })
-    .populate('task', 'title type points deadline')
+    .populate('task', 'title type points deadline code')
     .lean()
   const reviews = await Review.find({ submission: { $in: subs.map((s) => s._id) } }).lean()
   const bySub = Object.fromEntries(reviews.map((r) => [String(r.submission), r]))
@@ -84,7 +84,7 @@ export const listAllSubmissions = asyncHandler(async (req, res) => {
     .sort({ submittedAt: -1 })
     .limit(300)
     .populate('intern', 'name email avatar')
-    .populate('task', 'title points')
+    .populate('task', 'title points code type deadline')
     .lean()
   const reviews = await Review.find({ submission: { $in: subs.map((s) => s._id) } }).select('submission decision pointsAwarded').lean()
   const bySub = Object.fromEntries(reviews.map((r) => [String(r.submission), r]))

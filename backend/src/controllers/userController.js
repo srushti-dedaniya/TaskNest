@@ -5,7 +5,13 @@ import Review from '../models/Review.js'
 import Task from '../models/Task.js'
 
 export const listInterns = asyncHandler(async (req, res) => {
-  const interns = await User.find({ role: 'intern' })
+  const filter = { role: 'intern' }
+  const { q } = req.query
+  if (q && q.trim()) {
+    const rx = { $regex: q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' }
+    filter.$or = [{ name: rx }, { email: rx }, { institution: rx }, { fieldOfStudy: rx }]
+  }
+  const interns = await User.find(filter)
     .sort({ points: -1 })
     .select('name email avatar institution fieldOfStudy points lastLoginAt createdAt')
     .lean()

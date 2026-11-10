@@ -117,6 +117,13 @@ export default function AdminTaskDetails() {
 
           <div className="flex items-center gap-space-sm self-start lg:self-end">
             <Link
+              to={`/admin/tasks/create?edit=${task._id}`}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-xs hover:bg-primary-container transition-all shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[16px]">edit</span>
+              <span>Edit Task</span>
+            </Link>
+            <Link
               to="/admin/tasks"
               className="flex items-center gap-1.5 px-space-md py-2 rounded-full bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-high transition-all border border-outline-variant/30"
             >
@@ -156,19 +163,19 @@ export default function AdminTaskDetails() {
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-secondary text-[20px]">group</span>
                   <span className="font-label-xs-caps text-label-xs-caps uppercase tracking-widest text-on-surface-variant font-semibold">
-                    Assigned Fellows ({assignedFellows.length})
+                    Assigned Interns ({assignedFellows.length})
                   </span>
                 </div>
                 <span className="font-label-xs-caps text-label-xs-caps uppercase text-secondary font-semibold">
-                  {task.assignment?.mode === 'all' ? 'Assigned to All Interns' : 'Targeted Assignment'}
+                  {task.assignment?.mode === 'all' ? 'Assigned to All Interns' : 'Specific Interns Assigned'}
                 </span>
               </div>
 
               {assignedFellows.length === 0 ? (
                 <p className="text-xs text-on-surface-variant italic py-4">
                   {task.assignment?.mode === 'all'
-                    ? 'Assigned to all active fellows in the enclave.'
-                    : 'No specific fellows directly assigned.'}
+                    ? 'Assigned to all active interns.'
+                    : 'No specific interns directly assigned.'}
                 </p>
               ) : (
                 <div className="divide-y divide-surface-container-high">
@@ -179,7 +186,7 @@ export default function AdminTaskDetails() {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container font-headline-sm text-xs flex items-center justify-center font-bold">
-                          {fellow.name ? fellow.name.charAt(0).toUpperCase() : 'F'}
+                          {fellow.name ? fellow.name.charAt(0).toUpperCase() : 'I'}
                         </div>
                         <div className="min-w-0">
                           <div className="font-title-md text-title-md text-on-surface truncate">
@@ -264,7 +271,7 @@ export default function AdminTaskDetails() {
                     No Submissions Yet
                   </h4>
                   <p className="font-body-md text-xs text-on-surface-variant max-w-xs leading-relaxed">
-                    Fellows have not yet dispatched submissions for this specific task.
+                    Interns have not yet submitted work for this task.
                   </p>
                 </div>
               ) : (
@@ -276,7 +283,7 @@ export default function AdminTaskDetails() {
                     >
                       <div className="min-w-0">
                         <p className="font-semibold text-primary truncate">
-                          {sub.intern?.name || 'Fellow'}
+                          {sub.intern?.name || 'Intern'}
                         </p>
                         <p className="text-[10px] text-on-surface-variant">
                           {new Date(sub.submittedAt).toLocaleDateString()}

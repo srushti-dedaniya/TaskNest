@@ -25,6 +25,7 @@ import AdminEvaluateSubmission from '../pages/admin/EvaluateSubmission.jsx'
 import AdminInternManagement from '../pages/admin/InternManagement.jsx'
 import AdminInternDetails from '../pages/admin/InternDetails.jsx'
 import AdminSettings from '../pages/admin/Settings.jsx'
+import AdminProfile from '../pages/admin/Profile.jsx'
 
 // Intern Pages
 import InternDashboard from '../pages/intern/Dashboard.jsx'
@@ -238,6 +239,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute role="admin">
             <AdminLayout>
+              <AdminProfile />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminLayout>
               <AdminSettings />
             </AdminLayout>
           </ProtectedRoute>
@@ -263,7 +274,6 @@ export default function AppRoutes() {
       <Route path="/admin/evaluate" element={<Navigate to="/admin/submissions" replace />} />
       <Route path="/admin/fellow-management" element={<Navigate to="/admin/interns" replace />} />
       <Route path="/admin/fellow-details" element={<Navigate to="/admin/interns" replace />} />
-      <Route path="/admin/settings" element={<Navigate to="/admin/profile" replace />} />
 
       <Route path="/intern" element={<Navigate to="/intern/dashboard" replace />} />
       <Route path="/intern/tasks" element={<Navigate to="/intern/daily-tasks" replace />} />

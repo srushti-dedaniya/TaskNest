@@ -6,7 +6,6 @@ export default function InternLayout({ children }) {
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
-  const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
   const navLinks = [
@@ -27,6 +26,30 @@ export default function InternLayout({ children }) {
     navigate('/login')
   }
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    const trimmed = searchQuery.trim()
+    if (!trimmed) return
+    if (location.pathname.startsWith('/intern/weekly-goals')) {
+      navigate(`/intern/weekly-goals?q=${encodeURIComponent(trimmed)}`)
+    } else if (location.pathname.startsWith('/intern/submissions')) {
+      navigate(`/intern/submissions?q=${encodeURIComponent(trimmed)}`)
+    } else {
+      navigate(`/intern/daily-tasks?q=${encodeURIComponent(trimmed)}`)
+    }
+  }
+
+  const handleClearSearch = () => {
+    setSearchQuery('')
+    if (location.pathname.startsWith('/intern/weekly-goals')) {
+      navigate('/intern/weekly-goals')
+    } else if (location.pathname.startsWith('/intern/submissions')) {
+      navigate('/intern/submissions')
+    } else if (location.pathname.startsWith('/intern/daily-tasks')) {
+      navigate('/intern/daily-tasks')
+    }
+  }
+
   return (
     <div className="bg-background font-body-md text-on-surface antialiased min-h-screen selection:bg-secondary-container selection:text-on-secondary-container">
       {/* Floating Desktop Sidebar */}
@@ -36,7 +59,7 @@ export default function InternLayout({ children }) {
           <Link
             to="/intern/dashboard"
             className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-headline-sm font-semibold hover:scale-105 transition-transform"
-            title="TaskNest Fellow Studio"
+            title="TaskNest Intern Portal"
           >
             TN
           </Link>
@@ -107,18 +130,18 @@ export default function InternLayout({ children }) {
           <Link to="/intern/dashboard" className="flex items-baseline gap-1">
             <span className="font-headline-sm text-2xl tracking-tight text-primary font-medium">TaskNest</span>
             <span className="hidden sm:inline-block font-label-xs-caps text-[10px] uppercase tracking-widest text-on-surface-variant/80 ml-1">
-              Studio
+              Portal
             </span>
           </Link>
           <div className="h-4 w-px bg-outline-variant/50 hidden sm:block" />
           <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full bg-secondary-container/60 font-label-xs-caps text-[10px] uppercase tracking-wider text-on-secondary-container font-semibold">
-            Intern Fellow
+            Intern
           </span>
         </div>
 
         {/* Center: Search Bar */}
         <div className="flex-1 max-w-md mx-6 hidden lg:block">
-          <div className="relative flex items-center w-full">
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full">
             <span className="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-[18px]">
               search
             </span>
@@ -126,10 +149,24 @@ export default function InternLayout({ children }) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search tasks, weekly goals, monographs..."
-              className="w-full h-10 pl-10 pr-4 bg-surface-container-high/60 rounded-full font-body-sm text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest transition-all border border-outline-variant/20 focus:border-secondary"
+              placeholder="Search tasks, goals, submissions... (press Enter)"
+              className="w-full h-10 pl-10 pr-16 bg-surface-container-high/60 rounded-full font-body-sm text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest transition-all border border-outline-variant/20 focus:border-secondary"
             />
-          </div>
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-3 w-5 h-5 flex items-center justify-center rounded-full hover:bg-surface-container text-on-surface-variant hover:text-on-surface text-xs"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            ) : (
+              <span className="absolute right-3 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-xs-caps text-[9px] uppercase tracking-wider">
+                Enter
+              </span>
+            )}
+          </form>
         </div>
 
         {/* Right: Actions, Notifications, Profile */}
@@ -158,14 +195,14 @@ export default function InternLayout({ children }) {
           >
             <div className="text-right hidden sm:block">
               <div className="font-title-md text-sm text-on-surface leading-tight font-medium">
-                {user?.name || 'Julian Vance'}
+                {user?.name || 'Intern'}
               </div>
               <div className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant">
-                {user?.batch || 'Batch 2025'}
+                {user?.fieldOfStudy || user?.institution || 'Intern'}
               </div>
             </div>
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-sm text-xs shadow-sm">
-              {user?.avatar || 'JV'}
+              {user?.avatar || (user?.name ? user.name.slice(0, 2).toUpperCase() : 'IN')}
             </div>
           </Link>
         </div>

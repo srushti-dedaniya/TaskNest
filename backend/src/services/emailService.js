@@ -34,7 +34,7 @@ function baseHtmlTemplate({ title, preheader, bodyHtml, ctaText, ctaUrl, footerN
         <div class="logo-badge">T</div>
         <span class="brand-name">TaskNest</span>
       </div>
-      <div class="category-tag">Architectural Fellowship Enclave</div>
+      <div class="category-tag">Internship Portal</div>
     </div>
     <div class="content">
       <h1 class="headline">${title}</h1>
@@ -47,14 +47,14 @@ function baseHtmlTemplate({ title, preheader, bodyHtml, ctaText, ctaUrl, footerN
               <a href="${ctaUrl}" class="btn" target="_blank">${ctaText}</a>
             </div>
             <div class="fallback-box">
-              <strong>Secure Fallback Link:</strong><br/>
+              <strong>Direct Link:</strong><br/>
               <a href="${ctaUrl}" style="color:#74593f;">${ctaUrl}</a>
             </div>`
           : ''
       }
     </div>
     <div class="footer">
-      ${footerNote || 'TaskNest Architectural Fellowship Registry • Cryptographic Enclave Protocol'}<br/>
+      ${footerNote || 'TaskNest Task Management & Intern Portal'}<br/>
       If you did not initiate this request, no action is required.
     </div>
   </div>
@@ -69,28 +69,28 @@ export const emailService = {
     const verificationUrl = `${clientUrl}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`
     const directApiUrl = `${serverUrl}/api/auth/verify-email?token=${rawToken}`
 
-    const subject = 'TaskNest — Verify Your Institutional Email Address'
-    const title = 'Verify Fellowship Enclave Access'
-    const preheader = `Complete matriculation for candidate ${user.name}`
+    const subject = 'TaskNest — Verify Your Intern Email Address'
+    const title = 'Verify Your Intern Account'
+    const preheader = `Verify email address for ${user.name}`
     const bodyHtml = `
-      <p>Greetings <strong>${user.name}</strong>,</p>
-      <p>You have initiated matriculation into the <strong>TaskNest Architectural Fellowship Atelier</strong>. To protect the cryptographic integrity of our cohort and unlock sprint deliverables, please verify your institutional email address.</p>
+      <p>Hello <strong>${user.name}</strong>,</p>
+      <p>Thank you for registering with <strong>TaskNest</strong>. Please verify your email address to access your intern dashboard and view assigned tasks.</p>
       <p style="background:#f9f7f2;padding:12px 16px;border-left:3px solid #74593f;border-radius:4px;font-size:13px;">
-        <strong>Notice on Security Invariants:</strong> This single-use cryptographic verification token expires in <strong>24 hours</strong>. Unverified accounts cannot access repository blueprints or dispatch sprint deliverables.
+        <strong>Note:</strong> This verification link is valid for <strong>24 hours</strong>. Once verified, you can log in and submit your work.
       </p>
     `
 
     return sendEmail({
       to: user.email,
       subject,
-      text: `Hello ${user.name},\n\nPlease verify your TaskNest fellowship email by clicking this link:\n${verificationUrl}\n\nDirect verification URL:\n${directApiUrl}\n\nThis verification link is valid for 24 hours.`,
+      text: `Hello ${user.name},\n\nPlease verify your TaskNest account by clicking this link:\n${verificationUrl}\n\nDirect link:\n${directApiUrl}\n\nThis verification link is valid for 24 hours.`,
       html: baseHtmlTemplate({
         title,
         preheader,
         bodyHtml,
-        ctaText: 'Verify Fellowship Email Access →',
+        ctaText: 'Verify Email Address →',
         ctaUrl: verificationUrl,
-        footerNote: `TaskNest Identity & Enclave Access // Token SEC-256 Validated • Direct API link: ${directApiUrl}`,
+        footerNote: `TaskNest Account Security • Direct link: ${directApiUrl}`,
       }),
     })
   },
@@ -101,17 +101,17 @@ export const emailService = {
 
     return sendEmail({
       to: user.email,
-      subject: 'Welcome to TaskNest Architectural Fellowship',
-      text: `Greetings ${user.name},\n\nYour TaskNest fellow account is now verified and active. Enter the studio: ${dashboardUrl}`,
+      subject: 'Welcome to TaskNest — Account Verified',
+      text: `Hello ${user.name},\n\nYour TaskNest intern account is now verified. Access your dashboard: ${dashboardUrl}`,
       html: baseHtmlTemplate({
-        title: 'Matriculation Complete // Welcome Fellow',
-        preheader: `Welcome to TaskNest Cohort Atelier, ${user.name}`,
+        title: 'Account Verified // Welcome to TaskNest',
+        preheader: `Welcome to TaskNest, ${user.name}`,
         bodyHtml: `
-          <p>Greetings <strong>${user.name}</strong>,</p>
-          <p>Your institutional email has been verified. You now maintain active fellow clearance across the TaskNest computational cluster.</p>
-          <p>You may now access assigned sprint deliverables, inspect low-level kernel blueprints, and dispatch verified monographs for faculty assessment.</p>
+          <p>Hello <strong>${user.name}</strong>,</p>
+          <p>Your institutional email has been verified successfully. Your intern account is now active.</p>
+          <p>You can now log in, view your daily tasks and weekly goals, submit your work, and track your points.</p>
         `,
-        ctaText: 'Enter Fellow Atelier →',
+        ctaText: 'Go to Intern Dashboard →',
         ctaUrl: dashboardUrl,
       }),
     })
@@ -124,21 +124,21 @@ export const emailService = {
     return sendEmail({
       to: user.email,
       subject: `New Task Assigned: ${task.title}`,
-      text: `Hello ${user.name},\n\nYou have been assigned deliverable: ${task.title} (+${task.points} XP). Deadline: ${new Date(task.deadline).toISOString().slice(0, 10)}.\n\nView details: ${taskUrl}`,
+      text: `Hello ${user.name},\n\nYou have been assigned a new task: ${task.title} (+${task.points} points). Deadline: ${new Date(task.deadline).toISOString().slice(0, 10)}.\n\nView details: ${taskUrl}`,
       html: baseHtmlTemplate({
-        title: 'New Sprint Task Assigned',
-        preheader: `Deliverable assigned: ${task.title} (+${task.points} XP)`,
+        title: 'New Task Assigned',
+        preheader: `Task assigned: ${task.title} (+${task.points} points)`,
         bodyHtml: `
           <p>Hello <strong>${user.name}</strong>,</p>
-          <p>Faculty has assigned a new deliverable to your fellowship queue:</p>
+          <p>Faculty has assigned a new task to you:</p>
           <div style="background:#f9f7f2;padding:16px 20px;border-radius:12px;margin:16px 0;">
-            <div style="font-size:11px;color:#74593f;font-weight:700;text-transform:uppercase;">${task.code || 'SPEC'} // ${task.priority || 'Medium'} Priority</div>
+            <div style="font-size:11px;color:#74593f;font-weight:700;text-transform:uppercase;">${task.code || 'TASK'} // ${task.priority || 'Medium'} Priority</div>
             <div style="font-size:18px;color:#201e19;font-weight:600;margin:6px 0;">${task.title}</div>
-            <div style="font-size:13px;color:#504d44;">Available Reward: <strong>+${task.points} XP</strong> • Due: <strong>${new Date(task.deadline).toLocaleDateString()}</strong></div>
+            <div style="font-size:13px;color:#504d44;">Reward: <strong>+${task.points} points</strong> • Due: <strong>${new Date(task.deadline).toLocaleDateString()}</strong></div>
           </div>
           <p>${task.description}</p>
         `,
-        ctaText: 'Inspect Deliverable Spec →',
+        ctaText: 'View Task Details →',
         ctaUrl: taskUrl,
       }),
     })
@@ -150,16 +150,16 @@ export const emailService = {
 
     return sendEmail({
       to: recipient.email,
-      subject: `Deliverable Received: ${task.title}`,
-      text: `Deliverable submission received for "${task.title}" by fellow ${internName || recipient.name}.`,
+      subject: `Task Submission Received: ${task.title}`,
+      text: `Submission received for "${task.title}" by intern ${internName || recipient.name}.`,
       html: baseHtmlTemplate({
-        title: 'Deliverable Dispatched to Queue',
+        title: 'New Task Submission Received',
         preheader: `Submission received for ${task.title}`,
         bodyHtml: `
-          <p>A new implementation bundle has been dispatched to the faculty review queue for <strong>${task.title}</strong> by fellow <strong>${internName || recipient.name}</strong>.</p>
-          <p>Test suites and benchmark telemetry have been bound for faculty peer evaluation.</p>
+          <p>A new submission has been submitted for <strong>${task.title}</strong> by intern <strong>${internName || recipient.name}</strong>.</p>
+          <p>It is now awaiting your review in the submission reviews queue.</p>
         `,
-        ctaText: 'Open Review Workbench →',
+        ctaText: 'Review Submission →',
         ctaUrl: queueUrl,
       }),
     })
@@ -172,29 +172,29 @@ export const emailService = {
 
     return sendEmail({
       to: user.email,
-      subject: `Evaluation ${isApproved ? 'Approved (+XP Awarded)' : 'Revision Requested'}: ${task?.title || 'Deliverable'}`,
-      text: `Hello ${user.name},\n\nYour deliverable for "${task?.title}" has been evaluated: ${review.decision.toUpperCase()}.\nPoints Awarded: +${review.pointsAwarded || 0} XP\nFeedback: ${review.feedback}\n\nView points ledger: ${pointsUrl}`,
+      subject: `Task Review: ${isApproved ? 'Approved (+Points Awarded)' : 'Changes Needed'} - ${task?.title || 'Task'}`,
+      text: `Hello ${user.name},\n\nYour submission for "${task?.title}" has been reviewed: ${review.decision.toUpperCase()}.\nPoints Awarded: +${review.pointsAwarded || 0} XP\nFeedback: ${review.feedback}\n\nView points: ${pointsUrl}`,
       html: baseHtmlTemplate({
-        title: isApproved ? 'Attestation Approved & Points Awarded' : 'Revisions Requested on Deliverable',
-        preheader: `Evaluation complete for ${task?.title}: ${isApproved ? `+${review.pointsAwarded} XP awarded` : 'Revisions requested'}`,
+        title: isApproved ? 'Submission Approved & Points Awarded' : 'Changes Needed on Task Submission',
+        preheader: `Review complete for ${task?.title}: ${isApproved ? `+${review.pointsAwarded} points awarded` : 'Changes needed'}`,
         bodyHtml: `
           <p>Hello <strong>${user.name}</strong>,</p>
-          <p>Faculty has completed evaluation of your deliverable for <strong>${task?.title || 'Deliverable'}</strong>.</p>
+          <p>Faculty has reviewed your submission for <strong>${task?.title || 'Task'}</strong>.</p>
           <div style="background:#f9f7f2;padding:16px 20px;border-radius:12px;margin:16px 0;">
             <div style="font-size:12px;color:#74593f;font-weight:700;text-transform:uppercase;">
-              Attestation Result: <strong>${review.decision.toUpperCase()}</strong>
+              Status: <strong>${isApproved ? 'Approved' : 'Changes Needed'}</strong>
             </div>
             ${
               isApproved
-                ? `<div style="font-size:22px;color:#201e19;font-weight:700;margin:6px 0;">+${review.pointsAwarded} XP Awarded</div>`
-                : `<div style="font-size:14px;color:#ba1a1a;margin:6px 0;">Please revise according to faculty feedback and resubmit.</div>`
+                ? `<div style="font-size:22px;color:#201e19;font-weight:700;margin:6px 0;">+${review.pointsAwarded} Points Awarded</div>`
+                : `<div style="font-size:14px;color:#ba1a1a;margin:6px 0;">Please review the faculty feedback below and submit updated work.</div>`
             }
             <div style="font-size:13px;color:#504d44;margin-top:8px;font-style:italic;">
               "${review.feedback}"
             </div>
           </div>
         `,
-        ctaText: 'View Fellowship Points Ledger →',
+        ctaText: 'View Points & Performance →',
         ctaUrl: pointsUrl,
       }),
     })
@@ -206,19 +206,19 @@ export const emailService = {
 
     return sendEmail({
       to: user.email,
-      subject: 'TaskNest — Reset Your Passphrase',
-      text: `Hello ${user.name},\n\nA passphrase reset was requested for your account. Click this link:\n${resetUrl}\n\nValid for 30 minutes. If you did not request this, please ignore this email.`,
+      subject: 'TaskNest — Reset Your Password',
+      text: `Hello ${user.name},\n\nA password reset was requested for your account. Click this link:\n${resetUrl}\n\nValid for 30 minutes. If you did not request this, please ignore this email.`,
       html: baseHtmlTemplate({
-        title: 'Passphrase Reset Challenge',
+        title: 'Reset Your Password',
         preheader: `Password reset request for ${user.email}`,
         bodyHtml: `
           <p>Hello <strong>${user.name}</strong>,</p>
-          <p>An enclave passphrase reset challenge was initiated for your institutional identity.</p>
+          <p>We received a request to reset your TaskNest account password.</p>
           <p style="background:#f9f7f2;padding:12px 16px;border-left:3px solid #74593f;border-radius:4px;font-size:13px;">
             This single-use reset link expires in <strong>30 minutes</strong>.
           </p>
         `,
-        ctaText: 'Reset Enclave Passphrase →',
+        ctaText: 'Reset Password →',
         ctaUrl: resetUrl,
       }),
     })

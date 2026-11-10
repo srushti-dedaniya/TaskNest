@@ -40,7 +40,7 @@ export default function Points() {
   const nextLevelPoints = level * 1000
   const pointsToNext = Math.max(0, nextLevelPoints - currentPoints)
   const progressPct = Math.min(100, Math.round(((currentPoints % 1000) / 1000) * 100))
-  const userName = user?.name || 'Fellow'
+  const userName = user?.name || 'Intern'
 
   // Build sprint chart from the real points ledger (chronological, cumulative)
   const performanceHistory = (() => {
@@ -67,7 +67,7 @@ export default function Points() {
             Your Growth Journey.
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Track your fellowship experience trajectory, protocol masteries, and faculty review assessments across active sprints.
+            Track your internship points growth, completed tasks, and faculty feedback across active sprints.
           </p>
         </div>
 

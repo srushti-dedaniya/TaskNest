@@ -44,7 +44,7 @@ export const register = asyncHandler(async (req, res) => {
   })
 
   res.status(201).json({
-    message: 'Fellow candidate registered successfully. A verification link has been dispatched to your institutional email.',
+    message: 'Intern registered successfully. A verification link has been sent to your email.',
     email: user.email,
     isEmailVerified: false,
     user: user.toSafeJSON(),
@@ -98,7 +98,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   }
 
   res.json({
-    message: 'Institutional email successfully verified. Fellowship enclave access granted.',
+    message: 'Email successfully verified. You can now access your intern dashboard.',
     user: user.toSafeJSON(),
     token: authToken,
   })

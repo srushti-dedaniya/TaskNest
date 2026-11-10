@@ -10,11 +10,9 @@ export default function SubmitTask() {
   const [task, setTask] = useState(null)
   const [resolvedTaskId, setResolvedTaskId] = useState(taskId)
 
-  const [repoUrl, setRepoUrl] = useState('https://github.com/tasknest/julian-vance/raft-election')
-  const [liveUrl, setLiveUrl] = useState('https://raft-election.julianvance.tasknest.org')
-  const [notes, setNotes] = useState(
-    'Election timeouts randomized in the [150ms, 300ms] band. Monograph drafts bound in the artifact bundle alongside benchmark telemetry and fuzz corpora. All 34 automated unit test scenarios passed.'
-  )
+  const [repoUrl, setRepoUrl] = useState('')
+  const [liveUrl, setLiveUrl] = useState('')
+  const [notes, setNotes] = useState('')
   const [checkPassed, setCheckPassed] = useState(true)
   const [checkStyle, setCheckStyle] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -60,11 +58,11 @@ export default function SubmitTask() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!repoUrl.trim() || !notes.trim()) {
-      setError('Please provide a valid repository URL and submission monograph summary.')
+      setError('Please provide a repository URL and submission notes.')
       return
     }
     if (!checkPassed || !checkStyle) {
-      setError('Please confirm all pre-submission verification checks.')
+      setError('Please confirm all pre-submission checklist items.')
       return
     }
 
@@ -86,18 +84,18 @@ export default function SubmitTask() {
         navigate('/intern/submissions')
       }, 1200)
     } catch (err) {
-      setError(err.message || 'Failed to dispatch submission.')
+      setError(err.message || 'Failed to submit task.')
     } finally {
       setSubmitting(false)
     }
   }
 
   const selectedTask = task || MOCK_TASKS[0]
-  const taskCode = selectedTask._id ? `SPEC-${selectedTask._id.slice(-4).toUpperCase()}` : selectedTask.code || 'SPEC-0841'
+  const taskCode = selectedTask._id ? `TASK-${selectedTask._id.slice(-4).toUpperCase()}` : selectedTask.code || 'TASK-0841'
 
   return (
     <div className="space-y-8">
-      {/* Editorial Header */}
+      {/* Header */}
       <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-outline-variant/30 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -109,14 +107,14 @@ export default function SubmitTask() {
             </Link>
             <span className="text-outline-variant font-label-xs-caps">/</span>
             <span className="font-label-xs-caps text-[11px] uppercase tracking-wider text-on-surface-variant">
-              Dispatch Verification
+              Submit Task
             </span>
           </div>
           <h1 className="font-headline-lg text-3xl md:text-5xl text-primary tracking-tight font-medium">
-            Submit Deliverable
+            Submit Task
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Dispatch your implementation bundle, live demo links, and formal monograph notes for faculty peer review and XP evaluation.
+            Submit your code repository link, live demo, and summary notes for faculty evaluation.
           </p>
         </div>
 
@@ -202,14 +200,14 @@ export default function SubmitTask() {
             {/* Verification Notes */}
             <div>
               <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                Monograph Notes &amp; Verification Proof *
+                Submission Notes &amp; Summary *
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={5}
                 className="w-full p-4 rounded-2xl bg-surface-container-high/60 text-sm text-primary border border-outline-variant/30 focus:outline-none focus:bg-surface-container-lowest"
-                placeholder="Summarize your implementation decisions, algorithmic complexities, and testing results..."
+                placeholder="Summarize your work, key implementation details, and test results..."
                 required
               />
             </div>
@@ -217,7 +215,7 @@ export default function SubmitTask() {
             {/* Verification Checklist */}
             <div className="p-4 rounded-2xl bg-surface-container-low space-y-3 border border-outline-variant/20">
               <span className="font-label-xs-caps text-xs uppercase tracking-wider text-secondary font-semibold block">
-                Pre-Dispatch Verification Criteria
+                Submission Checklist
               </span>
 
               <label className="flex items-center gap-2.5 cursor-pointer">
@@ -228,7 +226,7 @@ export default function SubmitTask() {
                   className="w-4 h-4 rounded text-secondary accent-secondary cursor-pointer"
                 />
                 <span className="text-xs text-on-surface">
-                  Automated test suites passed locally with zero regression failures.
+                  I have tested my solution and confirmed that all requirements are met.
                 </span>
               </label>
 
@@ -240,7 +238,7 @@ export default function SubmitTask() {
                   className="w-4 h-4 rounded text-secondary accent-secondary cursor-pointer"
                 />
                 <span className="text-xs text-on-surface">
-                  Monograph documentation formatted according to TaskNest Styleguide v2.4.
+                  My code is clean, formatted, and ready for faculty review.
                 </span>
               </label>
             </div>
@@ -255,12 +253,12 @@ export default function SubmitTask() {
                   <span className="material-symbols-outlined text-[18px] animate-spin">
                     progress_activity
                   </span>
-                  <span>Packaging Verification Bundle...</span>
+                  <span>Submitting...</span>
                 </>
               ) : (
                 <>
                   <span className="material-symbols-outlined text-[18px]">send</span>
-                  <span>Dispatch Submission for Review</span>
+                  <span>Submit Task for Review</span>
                 </>
               )}
             </button>

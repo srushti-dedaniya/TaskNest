@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { taskService } from '../../services/api.js'
 
 export default function ManageTasks() {
+  const [searchParams] = useSearchParams()
+  const initialQuery = searchParams.get('q') || ''
+
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(initialQuery)
   const [typeFilter, setTypeFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deleting, setDeleting] = useState(false)
+
+  // Sync if URL query param changes
+  useEffect(() => {
+    if (searchParams.get('q') !== null) {
+      setSearch(searchParams.get('q') || '')
+    }
+  }, [searchParams])
 
   const loadTasks = async () => {
     try {
@@ -20,13 +30,18 @@ export default function ManageTasks() {
       setTasks(
         (res?.tasks ?? []).map((t) => ({
           id: t._id || t.id,
-          code: t.code || `SPEC-${(t._id || '').slice(-4).toUpperCase() || '1001'}`,
+          code: t.code || `TASK-${(t._id || '').slice(-4).toUpperCase() || '1001'}`,
           title: t.title,
           description: t.description,
           type: t.type === 'weekly' ? 'Weekly' : 'Daily',
           priority: t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : 'Medium',
           points: t.points,
-          assignedToName: t.assignment?.mode === 'all' ? 'All Fellows' : 'Individual',
+          assignedToName:
+            t.assignment?.mode === 'all'
+              ? 'All Interns'
+              : Array.isArray(t.assignment?.interns) && t.assignment.interns.length > 0
+              ? t.assignment.interns.map((i) => i.name || 'Intern').join(', ')
+              : 'Specific Interns',
           deadline: t.deadline,
           status: t.status || 'Active'
         }))
@@ -45,10 +60,13 @@ export default function ManageTasks() {
   }, [])
 
   const filteredTasks = tasks.filter((t) => {
+    const q = search.toLowerCase().trim()
     const matchesSearch =
-      t.title?.toLowerCase().includes(search.toLowerCase()) ||
-      t.code?.toLowerCase().includes(search.toLowerCase()) ||
-      t.assignedToName?.toLowerCase().includes(search.toLowerCase())
+      !q ||
+      t.title?.toLowerCase().includes(q) ||
+      t.code?.toLowerCase().includes(q) ||
+      t.description?.toLowerCase().includes(q) ||
+      t.assignedToName?.toLowerCase().includes(q)
     const matchesType = typeFilter === 'all' || t.type?.toLowerCase() === typeFilter.toLowerCase()
     const matchesPriority =
       priorityFilter === 'all' || t.priority?.toLowerCase() === priorityFilter.toLowerCase()
@@ -84,7 +102,7 @@ export default function ManageTasks() {
             Task Management
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Monitor, assign, and audit fellowship tasks across core protocol implementation, formal monograph writing, and verification benchmarks.
+            Monitor, assign, and manage intern tasks, deadlines, and submissions.
           </p>
         </div>
 
@@ -93,7 +111,7 @@ export default function ManageTasks() {
           className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-sm self-start lg:self-end"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
-          <span>Assign New Task</span>
+          <span>Assign Task</span>
         </Link>
       </section>
 
@@ -109,9 +127,19 @@ export default function ManageTasks() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by task title, spec code (e.g. SPEC-0841), or intern name..."
-              className="w-full h-11 pl-10 pr-4 bg-surface-container-high/60 rounded-full text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest border border-outline-variant/30 transition-all"
+              placeholder="Search by task title, description, code, or assigned intern..."
+              className="w-full h-11 pl-10 pr-10 bg-surface-container-high/60 rounded-full text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest border border-outline-variant/30 transition-all"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-on-surface-variant hover:text-primary transition-colors"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           {/* Type Filters */}
@@ -164,7 +192,7 @@ export default function ManageTasks() {
         {loading ? (
           <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
             <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-            <span>Querying Task Enclave Ledger...</span>
+            <span>Loading tasks...</span>
           </div>
         ) : loadError ? (
           <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -172,14 +200,25 @@ export default function ManageTasks() {
             <span>{loadError}</span>
           </div>
         ) : filteredTasks.length === 0 ? (
-          <div className="py-16 text-center">
+          <div className="py-16 text-center space-y-3">
             <span className="material-symbols-outlined text-4xl text-outline-variant">
               rule_folder
             </span>
-            <h3 className="font-headline-sm text-lg text-primary mt-2">No matching tasks found</h3>
-            <p className="text-xs text-on-surface-variant mt-1">
-              Try adjusting your search query or filter toggles.
+            <h3 className="font-headline-sm text-lg text-primary">No matching tasks found</h3>
+            <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
+              {search
+                ? `No tasks match your search "${search}". Try another keyword or clear the search.`
+                : 'No tasks currently match the selected filters.'}
             </p>
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-surface-container text-primary text-xs font-semibold hover:bg-surface-container-high transition-colors"
+              >
+                Clear Search
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -207,7 +246,7 @@ export default function ManageTasks() {
                     <span className="px-2.5 py-0.5 rounded-full font-label-xs-caps text-[10px] uppercase bg-surface-bright text-on-surface-variant">
                       {task.type} Task
                     </span>
-                    <span className="text-xs font-bold text-secondary">+{task.points} XP</span>
+                    <span className="text-xs font-bold text-secondary">+{task.points} points</span>
                   </div>
 
                   <h3 className="font-title-lg text-base md:text-lg text-primary font-semibold group-hover:text-secondary transition-colors">
@@ -231,7 +270,7 @@ export default function ManageTasks() {
                         schedule
                       </span>
                       <span>
-                        Due {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'Nov 20, 23:59 UTC'}
+                        Due {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
                       </span>
                     </div>
                     <span>•</span>
@@ -242,8 +281,17 @@ export default function ManageTasks() {
                 {/* Actions */}
                 <div className="flex items-center gap-2 self-start lg:self-center shrink-0">
                   <Link
+                    to={`/admin/tasks/create?edit=${task.id}`}
+                    className="px-3.5 py-2 rounded-full bg-surface-bright text-on-surface font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30 flex items-center gap-1.5"
+                    title="Edit Task"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Edit</span>
+                  </Link>
+
+                  <Link
                     to={`/admin/tasks/${task.id}`}
-                    className="px-4 py-2 rounded-full bg-surface-bright text-on-surface font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30 flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-full bg-surface-bright text-on-surface font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30 flex items-center gap-1.5"
                   >
                     <span className="material-symbols-outlined text-[16px]">visibility</span>
                     <span>Details</span>
@@ -273,7 +321,7 @@ export default function ManageTasks() {
               <h3 className="font-headline-sm text-xl text-primary font-medium">Confirm Task Removal</h3>
             </div>
             <p className="text-sm text-on-surface-variant">
-              Are you sure you want to retract this task from the active registry? Assigned fellows will be notified and points allocated will be retired.
+              Are you sure you want to delete this task? Assigned interns will be notified and this task will no longer be active.
             </p>
             <div className="flex items-center justify-end gap-3 pt-3">
               <button

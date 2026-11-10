@@ -119,25 +119,25 @@ export default function Register() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-highest text-secondary font-label-xs-caps text-[11px] tracking-widest uppercase font-semibold">
                   <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                  Fellowship Matriculation // Cohort 2025.2
+                  Intern Portal // Registration
                 </span>
                 <span className="px-2.5 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-xs-caps text-[11px] uppercase tracking-wider">
-                  Form Ref. HK-REG-9402
+                  Intern Account
                 </span>
               </div>
               <div className="flex items-center gap-2 text-on-surface-variant font-label-xs-caps text-xs uppercase tracking-wider">
                 <span className="material-symbols-outlined text-sm text-secondary">verified_user</span>
-                Enclave Root Attestation Active
+                Secure Registration
               </div>
             </div>
 
             {/* Editorial Title */}
             <div className="relative z-10 max-w-3xl mb-8">
               <h1 className="font-headline-lg text-3xl sm:text-4xl text-primary tracking-tight mb-2">
-                Matriculate as Architectural Fellow
+                Register as an Intern
               </h1>
               <p className="font-body-lg text-sm sm:text-base text-on-surface-variant leading-relaxed">
-                Enter your academic credentials, monograph specialization track, and verify hardware enclave security keys to join the active cohort atelier.
+                Create your intern account to access assigned tasks, submit your deliverables, and earn performance points.
               </p>
 
               {errorMsg && (
@@ -175,10 +175,10 @@ export default function Register() {
                 </div>
                 <div className="min-w-0">
                   <p className="font-label-xs-caps text-[10px] uppercase tracking-widest text-secondary font-semibold">
-                    Phase 01
+                    Step 01
                   </p>
-                  <p className="font-title-md text-sm text-primary font-semibold truncate">Institutional Pedigree</p>
-                  <p className="font-body-sm text-xs text-on-surface-variant">Identity &amp; Academic Lineage</p>
+                  <p className="font-title-md text-sm text-primary font-semibold truncate">Personal Details</p>
+                  <p className="font-body-sm text-xs text-on-surface-variant">Name, Email &amp; Institution</p>
                 </div>
               </button>
 
@@ -200,10 +200,10 @@ export default function Register() {
                 </div>
                 <div className="min-w-0">
                   <p className="font-label-xs-caps text-[10px] uppercase tracking-widest text-secondary font-semibold">
-                    Phase 02
+                    Step 02
                   </p>
-                  <p className="font-title-md text-sm text-primary font-semibold truncate">Research Track</p>
-                  <p className="font-body-sm text-xs text-on-surface-variant">Core Discipline</p>
+                  <p className="font-title-md text-sm text-primary font-semibold truncate">Field of Study</p>
+                  <p className="font-body-sm text-xs text-on-surface-variant">Academic Specialization</p>
                 </div>
               </button>
 
@@ -225,10 +225,10 @@ export default function Register() {
                 </div>
                 <div className="min-w-0">
                   <p className="font-label-xs-caps text-[10px] uppercase tracking-widest text-secondary font-semibold">
-                    Phase 03
+                    Step 03
                   </p>
-                  <p className="font-title-md text-sm text-primary font-semibold truncate">Security &amp; Passphrase</p>
-                  <p className="font-body-sm text-xs text-on-surface-variant">FIDO2 &amp; Enclave Setup</p>
+                  <p className="font-title-md text-sm text-primary font-semibold truncate">Security &amp; Password</p>
+                  <p className="font-body-sm text-xs text-on-surface-variant">Create Password</p>
                 </div>
               </button>
             </div>
@@ -552,7 +552,7 @@ export default function Register() {
                     </div>
                   </div>
 
-                  {/* Honor Code */}
+                  {/* Terms / Integrity */}
                   <div className="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex items-start gap-3">
                     <input
                       type="checkbox"
@@ -562,7 +562,7 @@ export default function Register() {
                       className="mt-0.5 w-4 h-4 rounded text-primary focus:ring-0 accent-primary cursor-pointer"
                     />
                     <label htmlFor="honor-code" className="font-body-md text-xs text-on-surface cursor-pointer select-none">
-                      I agree to the <span className="text-secondary font-semibold underline">TaskNest Code of Computational Rigor</span> and Fellowship Honor Code. I covenant to uphold pure peer consensus and submit all production artifacts under dual research licensing.
+                      I agree to the <span className="text-secondary font-semibold underline">TaskNest Terms &amp; Conditions</span> and Intern Code of Conduct. I agree to submit authentic work and adhere to high standards of integrity.
                     </label>
                   </div>
 
@@ -583,11 +583,11 @@ export default function Register() {
                       {isSubmitting ? (
                         <>
                           <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                          <span>Matriculating Intern Account...</span>
+                          <span>Creating Intern Account...</span>
                         </>
                       ) : (
                         <>
-                          <span>Complete Matriculation &amp; Verify Email</span>
+                          <span>Create Account &amp; Verify Email</span>
                           <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">
                             arrow_forward
                           </span>
@@ -604,7 +604,7 @@ export default function Register() {
 
       {/* Footer */}
       <footer className="w-full py-4 text-center font-label-xs-caps text-[11px] text-on-surface-variant uppercase tracking-widest">
-        Secure Workspace • Editorial Monograph Protocol
+        Secure Workspace • TaskNest Portal
       </footer>
     </div>
   )

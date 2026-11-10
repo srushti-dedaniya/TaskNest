@@ -137,26 +137,26 @@ export default function Login() {
 
               <div className="relative z-10 flex items-center justify-between">
                 <span className="font-label-xs-caps text-[10px] text-secondary px-3 py-1 rounded-full bg-surface-container-high font-semibold uppercase tracking-wider">
-                  Enclave Node 09
+                  TaskNest Portal
                 </span>
                 <span className="w-2 h-2 rounded-full bg-secondary" />
               </div>
 
               <div className="relative z-10 space-y-4 my-auto py-8">
                 <span className="font-label-xs-caps text-[11px] text-secondary uppercase tracking-[0.2em] font-semibold">
-                  Architectural Fellowship Portal
+                  Task Management &amp; Intern Portal
                 </span>
                 <h2 className="font-headline-lg text-3xl md:text-4xl text-primary font-normal leading-tight">
-                  Where Rigor Meets Distributed Systems.
+                  Where Collaboration Meets High Performance.
                 </h2>
                 <p className="font-body-md text-sm text-on-surface-variant max-w-sm">
-                  Access assigned sprint tasks, dispatch verified monographs, and track your performance standing across cohorts.
+                  Access assigned tasks, submit your deliverables, and track your performance standing.
                 </p>
               </div>
 
               <div className="relative z-10 pt-4 border-t border-outline-variant/30 flex items-center justify-between text-xs text-on-surface-variant font-label-xs-caps uppercase tracking-wider">
-                <span>TaskNest Protocol</span>
-                <span>v2.4 Production</span>
+                <span>TaskNest Portal</span>
+                <span>Production</span>
               </div>
             </div>
 
@@ -167,7 +167,7 @@ export default function Login() {
                   Welcome back
                 </h1>
                 <p className="font-body-md text-sm text-on-surface-variant mt-1">
-                  Authenticate your fellowship credentials to enter your workspace.
+                  Enter your credentials to access your workspace.
                 </p>
               </div>
 
@@ -182,7 +182,7 @@ export default function Login() {
                       : 'text-on-surface-variant hover:text-primary'
                   }`}
                 >
-                  Intern Fellow
+                  Intern
                 </button>
                 <button
                   type="button"
@@ -206,10 +206,10 @@ export default function Login() {
                     </span>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wider text-secondary font-label-xs-caps">
-                        Institutional Email Verification Pending
+                        Email Verification Pending
                       </p>
                       <p className="text-xs text-on-surface-variant mt-0.5">
-                        Your account has not completed cryptographic email verification. You must attest your address before accessing the fellowship atelier.
+                        Please verify your email address to activate your account. Click below to resend the verification link.
                       </p>
                     </div>
                   </div>
@@ -342,11 +342,11 @@ export default function Login() {
                       <span className="material-symbols-outlined text-[18px] animate-spin">
                         progress_activity
                       </span>
-                      <span>Verifying Credentials...</span>
+                      <span>Signing In...</span>
                     </>
                   ) : (
                     <>
-                      <span>Authenticate &amp; Enter</span>
+                      <span>Sign In</span>
                       <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                     </>
                   )}
@@ -356,13 +356,13 @@ export default function Login() {
               {/* Registration Prompt */}
               <div className="pt-4 border-t border-outline-variant/20 text-center">
                 <p className="text-xs text-on-surface-variant mb-3">
-                  Don't possess an active fellowship matriculation token?
+                  Don't have an account yet?
                 </p>
                 <Link
                   to="/register"
                   className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-full bg-surface-container hover:bg-surface-container-high text-xs font-label-md text-primary transition-colors border border-outline-variant/30"
                 >
-                  <span>Matriculate / Request Registration</span>
+                  <span>Create an Intern Account</span>
                   <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
                 </Link>
               </div>
@@ -373,7 +373,7 @@ export default function Login() {
 
       {/* Footer */}
       <footer className="w-full py-4 text-center font-label-xs-caps text-[11px] text-on-surface-variant uppercase tracking-widest">
-        Secure Workspace • Editorial Monograph Protocol
+        Secure Workspace • TaskNest Portal
       </footer>
     </div>
   )

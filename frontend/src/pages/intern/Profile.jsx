@@ -51,20 +51,20 @@ export default function Profile() {
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-secondary" />
             <span className="font-label-xs-caps text-[11px] uppercase tracking-[0.2em] text-secondary font-semibold">
-              Fellowship Ledger // Fellow Profile
+              Intern Portal // Profile
             </span>
           </div>
           <h1 className="font-headline-lg text-3xl md:text-5xl text-primary tracking-tight font-medium">
-            Architectural Fellow Dossier
+            Intern Profile
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Manage your credentials, research focus areas, code repository links, and fellowship monograph history.
+            Manage your profile details, field of study, institution, and personal information.
           </p>
         </div>
 
         <div className="flex items-center gap-3 self-start lg:self-end">
           <span className="px-4 py-2 rounded-full bg-surface-container font-label-xs-caps text-xs text-secondary font-semibold uppercase">
-            {MOCK_INTERN.cohort}
+            Intern Active
           </span>
         </div>
       </section>
@@ -158,7 +158,7 @@ export default function Profile() {
 
         {/* Right: Profile Edit Form */}
         <div className="lg:col-span-8 bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-6">
-          <h3 className="font-headline-sm text-xl text-primary font-medium">Dossier Settings</h3>
+          <h3 className="font-headline-sm text-xl text-primary font-medium">Profile Settings</h3>
 
           <form onSubmit={handleSave} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,7 +176,7 @@ export default function Profile() {
 
               <div>
                 <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                  Fellowship Email
+                  Email Address
                 </label>
                 <input
                   type="email"
@@ -191,26 +191,43 @@ export default function Profile() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                Research Focus &amp; Core Architecture
-              </label>
-              <input
-                type="text"
-                value={focusArea}
-                onChange={(e) => setFocusArea(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl bg-surface-container-high/60 text-sm text-primary border border-outline-variant/30 focus:outline-none focus:bg-surface-container-lowest font-medium"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
+                  Field of Study / Specialization
+                </label>
+                <input
+                  type="text"
+                  value={focusArea}
+                  onChange={(e) => setFocusArea(e.target.value)}
+                  placeholder="e.g. Computer Science, Full-Stack Development"
+                  className="w-full h-11 px-4 rounded-xl bg-surface-container-high/60 text-sm text-primary border border-outline-variant/30 focus:outline-none focus:bg-surface-container-lowest font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
+                  Institution / University
+                </label>
+                <input
+                  type="text"
+                  value={institution}
+                  onChange={(e) => setInstitution(e.target.value)}
+                  placeholder="e.g. University / College"
+                  className="w-full h-11 px-4 rounded-xl bg-surface-container-high/60 text-sm text-primary border border-outline-variant/30 focus:outline-none focus:bg-surface-container-lowest font-medium"
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                Biographical Monograph
+                Bio / About Me
               </label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={4}
+                placeholder="Tell us about yourself..."
                 className="w-full p-4 rounded-2xl bg-surface-container-high/60 text-sm text-primary border border-outline-variant/30 focus:outline-none focus:bg-surface-container-lowest"
               />
             </div>
@@ -218,9 +235,10 @@ export default function Profile() {
             <div className="pt-4 flex items-center justify-end gap-3">
               <button
                 type="submit"
-                className="px-6 py-3 rounded-full bg-primary text-on-primary font-title-md text-sm hover:bg-primary-container transition-all shadow-md"
+                disabled={saving}
+                className="px-6 py-3 rounded-full bg-primary text-on-primary font-title-md text-sm hover:bg-primary-container transition-all shadow-md disabled:opacity-50"
               >
-                Save Changes
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>

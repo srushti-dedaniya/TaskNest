@@ -26,7 +26,7 @@ async function seed() {
     password: process.env.ADMIN_PASSWORD || 'Admin@12345',
     role: 'admin',
     isEmailVerified: true,
-    bio: 'Lead Systems Architect & Chair of Distributed Architecture Fellowship.',
+    bio: 'Faculty Member & Lead Systems Architect.',
     avatar: 'ER'
   })
 
@@ -49,8 +49,8 @@ async function seed() {
     password: 'Password@123',
     role: 'intern',
     isEmailVerified: true,
-    institution: 'Tsinghua University / Enclave Lab',
-    fieldOfStudy: 'Applied Cryptography & Security Monographs',
+    institution: 'Tsinghua University / Systems Lab',
+    fieldOfStudy: 'Applied Cryptography & Security',
     points: 1280,
     avatar: 'LZ',
     bio: 'Focus on TLS 1.3 cipher suite safety and constant-time cryptography.'
@@ -63,23 +63,23 @@ async function seed() {
     role: 'intern',
     isEmailVerified: true,
     institution: 'Systems Engineering Academy',
-    fieldOfStudy: 'Reliability Engineering & Jitter Telemetry',
+    fieldOfStudy: 'Reliability Engineering',
     points: 1110,
     avatar: 'BN',
-    bio: 'Focus on high-throughput streaming telemetry and jitter mitigation.'
+    bio: 'Focus on high-throughput streaming systems and performance.'
   })
 
   // Seed an unverified intern for testing & verification flows
   const unverifiedIntern = await User.create({
-    name: 'Unverified Fellow',
-    email: 'unverified.fellow@tasknest.org',
+    name: 'Unverified Intern',
+    email: 'unverified.intern@tasknest.org',
     password: 'Password@123',
     role: 'intern',
     isEmailVerified: false,
-    institution: 'Fellow Candidate Enclave',
-    fieldOfStudy: 'General Systems',
+    institution: 'University Lab',
+    fieldOfStudy: 'Computer Science',
     points: 0,
-    avatar: 'UF',
+    avatar: 'UI',
   })
 
   console.log('[seed] creating tasks...')
@@ -227,7 +227,7 @@ async function seed() {
   console.log('Admin:       admin@tasknest.org / Admin@12345')
   console.log('Intern:      julian.vance@tasknest.org / Password@123 (Verified)')
   console.log('Intern:      lin.zhang@tasknest.org / Password@123 (Verified)')
-  console.log('Unverified:  unverified.fellow@tasknest.org / Password@123 (Pending Verification)')
+  console.log('Unverified:  unverified.intern@tasknest.org / Password@123 (Pending Verification)')
   console.log('-------------------')
 
   await mongoose.disconnect()

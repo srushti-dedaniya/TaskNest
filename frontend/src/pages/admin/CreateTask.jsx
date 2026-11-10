@@ -1,37 +1,46 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { taskService, userService } from '../../services/api.js'
 
 export default function CreateTask() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const editTaskId = searchParams.get('edit')
+  const isEditing = Boolean(editTaskId)
 
   const [interns, setInterns] = useState([])
   const [scope, setScope] = useState('Daily')
   const [title, setTitle] = useState('')
-  const [code, setCode] = useState(`SPEC-${Math.floor(1000 + Math.random() * 9000)}`)
-  const [category, setCategory] = useState('Core Protocol')
+  const [code, setCode] = useState(`TASK-${Math.floor(1000 + Math.random() * 9000)}`)
+  const [category, setCategory] = useState('Core Development')
   const [priority, setPriority] = useState('High')
   const [points, setPoints] = useState(350)
-  const [assignedTo, setAssignedTo] = useState('all')
   const [deadline, setDeadline] = useState('2026-11-20T23:59')
   const [description, setDescription] = useState('')
   const [instructions, setInstructions] = useState([
-    'Branch from main with feat/ prefix.',
-    'Include benchmark telemetry alongside verification artifact.',
-    'Comply with TaskNest Monograph Styleguide v2.4.'
+    'Create branch from main with your feature name.',
+    'Write clean, readable code with descriptive comments.',
+    'Ensure all unit tests pass before submitting.'
   ])
   const [newInstruction, setNewInstruction] = useState('')
 
   const [rubric, setRubric] = useState([
-    { criterion: 'Protocol Invariant Verification', maxPoints: 200 },
-    { criterion: 'Code Quality & Formal Monograph Documentation', maxPoints: 150 }
+    { criterion: 'Implementation & Functionality', maxPoints: 200 },
+    { criterion: 'Code Quality & Documentation', maxPoints: 150 }
   ])
 
+  // Multi-intern assignment state
+  const [assignMode, setAssignMode] = useState('all') // 'all' | 'individual'
+  const [selectedInternIds, setSelectedInternIds] = useState([])
+  const [internSearch, setInternSearch] = useState('')
+
+  const [loadingTask, setLoadingTask] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
 
+  // Load interns list
   useEffect(() => {
     async function loadInterns() {
       try {
@@ -45,6 +54,89 @@ export default function CreateTask() {
     loadInterns()
   }, [])
 
+  // If in Edit mode, load the existing task
+  useEffect(() => {
+    async function loadTaskForEdit() {
+      if (!editTaskId) return
+      try {
+        setLoadingTask(true)
+        const res = await taskService.get(editTaskId)
+        if (res?.task) {
+          const t = res.task
+          setTitle(t.title || '')
+          setCode(t.code || '')
+          setDescription(t.description || '')
+          setScope(t.type === 'weekly' ? 'Weekly' : 'Daily')
+          setPriority(t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : 'Medium')
+          setPoints(t.points ?? 350)
+
+          if (t.deadline) {
+            const dateObj = new Date(t.deadline)
+            if (!isNaN(dateObj.getTime())) {
+              const pad = (n) => String(n).padStart(2, '0')
+              const formatted = `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}T${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}`
+              setDeadline(formatted)
+            }
+          }
+
+          if (Array.isArray(t.instructions) && t.instructions.length > 0) {
+            setInstructions(t.instructions)
+          }
+
+          const mode = t.assignment?.mode || 'all'
+          setAssignMode(mode)
+          if (mode === 'individual' && Array.isArray(t.assignment?.interns)) {
+            const ids = t.assignment.interns.map((i) => i._id || i)
+            setSelectedInternIds(ids)
+          }
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to load task for editing.')
+      } finally {
+        setLoadingTask(false)
+      }
+    }
+    loadTaskForEdit()
+  }, [editTaskId])
+
+  // Multi-select helpers
+  const handleToggleIntern = (internId) => {
+    if (fieldErrors.interns) setFieldErrors((prev) => ({ ...prev, interns: null }))
+    setSelectedInternIds((prev) =>
+      prev.includes(internId) ? prev.filter((id) => id !== internId) : [...prev, internId]
+    )
+  }
+
+  const handleSelectAllFiltered = () => {
+    if (fieldErrors.interns) setFieldErrors((prev) => ({ ...prev, interns: null }))
+    const filteredIds = filteredInterns.map((i) => i._id || i.id)
+    setSelectedInternIds((prev) => [...new Set([...prev, ...filteredIds])])
+  }
+
+  const handleClearAllSelected = () => {
+    setSelectedInternIds([])
+  }
+
+  const handleRemoveChip = (internId) => {
+    setSelectedInternIds((prev) => prev.filter((id) => id !== internId))
+  }
+
+  const filteredInterns = interns.filter((i) => {
+    const q = internSearch.toLowerCase().trim()
+    if (!q) return true
+    return (
+      (i.name || '').toLowerCase().includes(q) ||
+      (i.email || '').toLowerCase().includes(q) ||
+      (i.institution || '').toLowerCase().includes(q) ||
+      (i.fieldOfStudy || '').toLowerCase().includes(q)
+    )
+  })
+
+  // Selected intern objects for chips
+  const selectedInternsList = interns.filter((i) =>
+    selectedInternIds.includes(i._id || i.id)
+  )
+
   const handleAddInstruction = (e) => {
     e.preventDefault()
     if (!newInstruction.trim()) return
@@ -57,7 +149,7 @@ export default function CreateTask() {
   }
 
   const handleAddRubric = () => {
-    setRubric([...rubric, { criterion: 'Benchmark Validation', maxPoints: 50 }])
+    setRubric([...rubric, { criterion: 'Code Quality & Testing', maxPoints: 50 }])
   }
 
   const handleUpdateRubric = (index, field, value) => {
@@ -77,10 +169,10 @@ export default function CreateTask() {
 
     const errors = {}
     if (!title.trim()) {
-      errors.title = 'Please provide a deliverable title.'
+      errors.title = 'Please provide a task title.'
     }
     if (!description.trim()) {
-      errors.description = 'Please provide monograph guidelines/description.'
+      errors.description = 'Please provide task description and instructions.'
     }
 
     let parsedDeadline
@@ -89,7 +181,11 @@ export default function CreateTask() {
       if (isNaN(d.getTime())) throw new Error()
       parsedDeadline = d.toISOString()
     } catch {
-      errors.deadline = 'Please provide a valid canonical deadline.'
+      errors.deadline = 'Please provide a valid deadline.'
+    }
+
+    if (assignMode === 'individual' && selectedInternIds.length === 0) {
+      errors.interns = 'Please select at least one intern to assign this task.'
     }
 
     if (Object.keys(errors).length > 0) {
@@ -100,10 +196,7 @@ export default function CreateTask() {
 
     setSubmitting(true)
     try {
-      const isAll = assignedTo === 'all'
-      const isValidMongoId = typeof assignedTo === 'string' && /^[0-9a-fA-F]{24}$/.test(assignedTo)
-
-      await taskService.create({
+      const payload = {
         title: title.trim(),
         code: code.trim() || undefined,
         description: description.trim(),
@@ -113,17 +206,23 @@ export default function CreateTask() {
         points: Number(points),
         deadline: parsedDeadline,
         assignment: {
-          mode: isAll || !isValidMongoId ? 'all' : 'individual',
-          interns: !isAll && isValidMongoId ? [assignedTo] : []
+          mode: assignMode,
+          interns: assignMode === 'all' ? [] : [...new Set(selectedInternIds)]
         }
-      })
+      }
+
+      if (isEditing) {
+        await taskService.update(editTaskId, payload)
+      } else {
+        await taskService.create(payload)
+      }
 
       setSubmitted(true)
       setTimeout(() => {
         navigate('/admin/tasks')
       }, 1000)
     } catch (err) {
-      console.warn('[CreateTask] Error dispatching task:', err.message)
+      console.warn('[CreateTask] Error saving task:', err.message)
       const details = err.data?.details || err.details
       if (Array.isArray(details)) {
         const mapped = {}
@@ -132,31 +231,47 @@ export default function CreateTask() {
         })
         setFieldErrors(mapped)
       }
-      setError(err.message || 'Failed to dispatch task.')
+      setError(err.message || 'Failed to save task.')
     } finally {
       setSubmitting(false)
     }
   }
 
+  if (loadingTask) {
+    return (
+      <div className="py-24 text-center text-on-surface-variant flex flex-col items-center justify-center gap-3">
+        <span className="material-symbols-outlined text-3xl animate-spin text-secondary">
+          progress_activity
+        </span>
+        <p className="text-sm">Loading task details for editing...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
-      {/* Editorial Header */}
+      {/* Page Header */}
       <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-outline-variant/30 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Link to="/admin/tasks" className="font-label-xs-caps text-[11px] uppercase tracking-[0.2em] text-secondary font-semibold hover:underline">
-              Task Registry
+            <Link
+              to="/admin/tasks"
+              className="font-label-xs-caps text-[11px] uppercase tracking-[0.2em] text-secondary font-semibold hover:underline"
+            >
+              Tasks
             </Link>
             <span className="text-outline-variant font-label-xs-caps">/</span>
             <span className="font-label-xs-caps text-[11px] uppercase tracking-wider text-on-surface-variant">
-              Dispatch Forge
+              {isEditing ? 'Edit Task' : 'Create Task'}
             </span>
           </div>
           <h1 className="font-headline-lg text-3xl md:text-5xl text-primary tracking-tight font-medium">
-            Create &amp; Assign Task
+            {isEditing ? 'Edit Task' : 'Create & Assign Task'}
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Configure fellowship deliverables, bind grading rubrics, and assign to prospective fellows with deterministic XP values.
+            {isEditing
+              ? 'Update task instructions, deadline, points, and assigned interns.'
+              : 'Create a new task, assign it to all or specific interns, and set deadline and points.'}
           </p>
         </div>
 
@@ -180,18 +295,22 @@ export default function CreateTask() {
       {submitted && (
         <div className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
-          <span>Task successfully dispatched and assigned! Redirecting to Task Registry...</span>
+          <span>
+            {isEditing
+              ? 'Task updated successfully! Redirecting to tasks list...'
+              : 'Task successfully created and assigned! Redirecting to tasks list...'}
+          </span>
         </div>
       )}
 
       {/* Main Creation Form */}
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Form: Details & Rubric */}
-        <div className="lg:col-span-8 space-y-6">
+        {/* Left Form: Details & Steps */}
+        <div className="lg:col-span-7 space-y-6">
           {/* Scope Selector */}
           <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-4">
             <label className="font-label-xs-caps text-xs uppercase tracking-wider text-secondary font-semibold">
-              Task Scope & Cadence
+              Task Cadence
             </label>
             <div className="flex items-center gap-3">
               <button
@@ -204,7 +323,7 @@ export default function CreateTask() {
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">event_repeat</span>
-                <span>Daily Sprint Task (Micro-Deliverable)</span>
+                <span>Daily Task</span>
               </button>
               <button
                 type="button"
@@ -216,26 +335,26 @@ export default function CreateTask() {
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">flag</span>
-                <span>Weekly Milestone Goal</span>
+                <span>Weekly Goal</span>
               </button>
             </div>
           </div>
 
           {/* Core Info */}
           <div className="bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-5">
-            <h3 className="font-headline-sm text-xl text-primary font-medium">Task Specifications</h3>
+            <h3 className="font-headline-sm text-xl text-primary font-medium">Task Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                  Spec Code / Index
+                  Task Code / Tag
                 </label>
                 <input
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className="w-full h-11 px-4 rounded-xl bg-surface-container-high/60 text-sm font-mono text-primary border border-outline-variant/30 focus:outline-none focus:bg-surface-container-lowest"
-                  placeholder="SPEC-0841"
+                  placeholder="TASK-1001"
                 />
               </div>
 
@@ -248,11 +367,12 @@ export default function CreateTask() {
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl bg-surface-container-high/60 text-sm text-primary border border-outline-variant/30 focus:outline-none"
                 >
-                  <option>Core Protocol</option>
-                  <option>Cryptography</option>
-                  <option>Storage & WAL</option>
+                  <option>Core Development</option>
+                  <option>Frontend & UI</option>
+                  <option>Backend & API</option>
+                  <option>Database & Storage</option>
                   <option>Documentation</option>
-                  <option>Benchmarking & Telemetry</option>
+                  <option>Testing & QA</option>
                 </select>
               </div>
             </div>
@@ -260,7 +380,7 @@ export default function CreateTask() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
-                  Deliverable Title *
+                  Task Title *
                 </label>
                 {fieldErrors.title && <span className="text-xs text-error font-medium">{fieldErrors.title}</span>}
               </div>
@@ -274,7 +394,7 @@ export default function CreateTask() {
                 className={`w-full h-11 px-4 rounded-xl bg-surface-container-high/60 text-sm text-primary border ${
                   fieldErrors.title ? 'border-error ring-1 ring-error/40' : 'border-outline-variant/30'
                 } focus:outline-none focus:bg-surface-container-lowest font-medium transition-all`}
-                placeholder="e.g. Implement Raft Consensus Leader Election Protocol"
+                placeholder="e.g. Build User Authentication and Profile Management"
                 required
               />
             </div>
@@ -282,7 +402,7 @@ export default function CreateTask() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
-                  Architectural Abstract &amp; Monograph Guidelines *
+                  Task Description &amp; Instructions *
                 </label>
                 {fieldErrors.description && <span className="text-xs text-error font-medium">{fieldErrors.description}</span>}
               </div>
@@ -296,7 +416,7 @@ export default function CreateTask() {
                 className={`w-full p-4 rounded-2xl bg-surface-container-high/60 text-sm text-primary border ${
                   fieldErrors.description ? 'border-error ring-1 ring-error/40' : 'border-outline-variant/30'
                 } focus:outline-none focus:bg-surface-container-lowest transition-all`}
-                placeholder="Detail the technical expectations, formal invariants, algorithms, and documentation requirements..."
+                placeholder="Describe the task requirements, technical guidelines, and what the intern needs to deliver..."
                 required
               />
             </div>
@@ -304,9 +424,9 @@ export default function CreateTask() {
 
           {/* Instructions List Builder */}
           <div className="bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-4">
-            <h3 className="font-headline-sm text-xl text-primary font-medium">Deliverable Milestones &amp; Steps</h3>
+            <h3 className="font-headline-sm text-xl text-primary font-medium">Checklist Steps</h3>
             <p className="text-xs text-on-surface-variant">
-              Checklist items that the fellow must complete prior to submitting the verification bundle.
+              Steps that interns should follow and check off before submitting their work.
             </p>
 
             <div className="space-y-2">
@@ -337,56 +457,62 @@ export default function CreateTask() {
                 type="text"
                 value={newInstruction}
                 onChange={(e) => setNewInstruction(e.target.value)}
-                placeholder="Add milestone requirement..."
-                className="flex-1 h-10 px-4 rounded-full bg-surface-container-high/60 text-xs text-on-surface border border-outline-variant/30 focus:outline-none"
+                placeholder="Add another checklist step..."
+                className="flex-1 h-10 px-3.5 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleAddInstruction(e)
+                  }
+                }}
               />
               <button
                 type="button"
                 onClick={handleAddInstruction}
-                className="px-4 py-2 rounded-full bg-surface-container-highest hover:bg-surface-container text-xs font-label-md text-on-surface transition-colors"
+                className="px-4 py-2 rounded-xl bg-surface-container-high text-primary hover:bg-surface-container-highest text-xs font-label-md transition-colors"
               >
-                + Add Step
+                Add Step
               </button>
             </div>
           </div>
 
-          {/* Grading Rubric Builder */}
+          {/* Assessment Rubric */}
           <div className="bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-headline-sm text-xl text-primary font-medium">Evaluation Rubric</h3>
-                <p className="text-xs text-on-surface-variant">
-                  Points distribution criteria for faculty assessment.
+                <h3 className="font-headline-sm text-xl text-primary font-medium">Grading Rubric</h3>
+                <p className="text-xs text-on-surface-variant mt-0.5">
+                  Criteria used by faculty to review and grade submissions.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleAddRubric}
-                className="text-xs text-secondary hover:underline font-label-md flex items-center gap-1"
+                className="text-xs text-secondary hover:underline font-semibold flex items-center gap-1"
               >
-                <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                <span className="material-symbols-outlined text-[16px]">add</span>
                 <span>Add Criterion</span>
               </button>
             </div>
 
             <div className="space-y-3">
               {rubric.map((r, i) => (
-                <div key={i} className="flex items-center gap-3">
+                <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-surface-container-low border border-outline-variant/20">
                   <input
                     type="text"
                     value={r.criterion}
                     onChange={(e) => handleUpdateRubric(i, 'criterion', e.target.value)}
-                    className="flex-1 h-10 px-4 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none"
-                    placeholder="Criterion description"
+                    className="flex-1 bg-transparent text-xs text-primary focus:outline-none font-medium"
+                    placeholder="Criterion name..."
                   />
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     <input
                       type="number"
                       value={r.maxPoints}
                       onChange={(e) => handleUpdateRubric(i, 'maxPoints', e.target.value)}
-                      className="w-20 h-10 px-3 rounded-xl bg-surface-container-high/60 text-xs text-primary font-bold border border-outline-variant/30 focus:outline-none"
+                      className="w-16 h-8 px-2 rounded-lg bg-surface-bright text-xs text-secondary font-bold text-center border border-outline-variant/30 focus:outline-none"
                     />
-                    <span className="text-xs text-on-surface-variant">XP</span>
+                    <span className="text-[11px] text-on-surface-variant font-medium">points</span>
                   </div>
                   <button
                     type="button"
@@ -401,29 +527,185 @@ export default function CreateTask() {
           </div>
         </div>
 
-        {/* Right Sidebar: Assignment, Deadline, XP Value & Dispatch CTA */}
-        <div className="lg:col-span-4 space-y-6">
+        {/* Right Sidebar: Multi-Intern Assignment, Schedule, Points & Save */}
+        <div className="lg:col-span-5 space-y-6">
           <div className="bg-surface-bright rounded-3xl p-6 md:p-7 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-5">
-            <h3 className="font-headline-sm text-lg text-primary font-medium">Assignment &amp; Schedule</h3>
+            <h3 className="font-headline-sm text-lg text-primary font-medium">Assign Interns</h3>
 
-            {/* Assign To */}
-            <div>
-              <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
-                Assign To Fellow
+            {/* Assignment Mode Toggle */}
+            <div className="space-y-2">
+              <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
+                Assignment Scope
               </label>
-              <select
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none font-medium"
-              >
-                <option value="all">Cohort 09 (Broadcast to All Fellows)</option>
-                {interns.map((fellow) => (
-                  <option key={fellow._id || fellow.id} value={fellow._id || fellow.id}>
-                    {fellow.name} ({fellow.institution || 'Fellow'})
-                  </option>
-                ))}
-              </select>
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-surface-container-high/60 border border-outline-variant/20">
+                <button
+                  type="button"
+                  onClick={() => setAssignMode('all')}
+                  className={`py-2 px-3 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                    assignMode === 'all'
+                      ? 'bg-primary text-on-primary shadow-xs font-semibold'
+                      : 'text-on-surface-variant hover:text-primary'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">public</span>
+                  <span>All Interns</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAssignMode('individual')}
+                  className={`py-2 px-3 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                    assignMode === 'individual'
+                      ? 'bg-primary text-on-primary shadow-xs font-semibold'
+                      : 'text-on-surface-variant hover:text-primary'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">checklist</span>
+                  <span>Specific Interns</span>
+                </button>
+              </div>
             </div>
+
+            {/* Mode A: All Interns */}
+            {assignMode === 'all' && (
+              <div className="p-4 rounded-2xl bg-secondary-container/30 border border-secondary/20 text-xs text-on-secondary-container space-y-1">
+                <div className="font-semibold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+                  <span>Broadcast to All Active Interns ({interns.length})</span>
+                </div>
+                <p className="opacity-90 leading-relaxed">
+                  Every current intern and any newly verified intern will automatically receive this task on their dashboard.
+                </p>
+              </div>
+            )}
+
+            {/* Mode B: Multi-Intern Searchable Selector */}
+            {assignMode === 'individual' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
+                    Select Interns
+                  </span>
+                  <span className="text-xs font-bold text-secondary">
+                    {selectedInternIds.length} of {interns.length} selected
+                  </span>
+                </div>
+
+                {fieldErrors.interns && (
+                  <p className="text-xs text-error font-medium">{fieldErrors.interns}</p>
+                )}
+
+                {/* Selected Intern Chips */}
+                {selectedInternsList.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 p-2 rounded-2xl bg-surface-container-low border border-outline-variant/30 max-h-32 overflow-y-auto">
+                    {selectedInternsList.map((i) => (
+                      <span
+                        key={i._id || i.id}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-medium shadow-xs"
+                      >
+                        <span className="w-4 h-4 rounded-full bg-secondary text-on-secondary text-[9px] flex items-center justify-center font-bold">
+                          {(i.name || 'I').charAt(0).toUpperCase()}
+                        </span>
+                        <span className="truncate max-w-[130px]">{i.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveChip(i._id || i.id)}
+                          className="hover:text-error transition-colors ml-0.5"
+                          title="Remove"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Search Bar & Quick Select Actions */}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">
+                      search
+                    </span>
+                    <input
+                      type="text"
+                      value={internSearch}
+                      onChange={(e) => setInternSearch(e.target.value)}
+                      placeholder="Search interns by name or email..."
+                      className="w-full h-9 pl-9 pr-8 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none"
+                    />
+                    {internSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setInternSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant hover:text-primary"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <button
+                      type="button"
+                      onClick={handleSelectAllFiltered}
+                      className="text-secondary hover:underline font-semibold flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">select_all</span>
+                      <span>Select All ({filteredInterns.length})</span>
+                    </button>
+                    {selectedInternIds.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearAllSelected}
+                        className="text-error hover:underline font-medium"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Interns Scrollable Checkbox List */}
+                <div className="border border-outline-variant/30 rounded-2xl max-h-56 overflow-y-auto divide-y divide-outline-variant/20 bg-surface-container-low/40">
+                  {filteredInterns.length === 0 ? (
+                    <div className="p-4 text-center text-xs text-on-surface-variant">
+                      No interns match your search.
+                    </div>
+                  ) : (
+                    filteredInterns.map((intern) => {
+                      const id = intern._id || intern.id
+                      const isSelected = selectedInternIds.includes(id)
+                      return (
+                        <div
+                          key={id}
+                          onClick={() => handleToggleIntern(id)}
+                          className={`flex items-center gap-3 p-2.5 hover:bg-surface-container-high/70 cursor-pointer transition-colors ${
+                            isSelected ? 'bg-secondary-container/20' : ''
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}} // handled by parent onClick
+                            className="w-4 h-4 rounded accent-secondary cursor-pointer"
+                          />
+                          <div className="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs shrink-0">
+                            {(intern.name || 'I').charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-semibold text-primary truncate">
+                              {intern.name}
+                            </div>
+                            <div className="text-[11px] text-on-surface-variant truncate">
+                              {intern.email} {intern.institution ? `• ${intern.institution}` : ''}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Priority */}
             <div>
@@ -435,20 +717,20 @@ export default function CreateTask() {
                 onChange={(e) => setPriority(e.target.value)}
                 className="w-full h-11 px-3 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none font-medium"
               >
-                <option>Critical</option>
-                <option>High</option>
-                <option>Medium</option>
-                <option>Low</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
               </select>
             </div>
 
-            {/* XP Points */}
+            {/* Points */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
-                  Reward XP Value
+                  Reward Points
                 </label>
-                <span className="text-sm font-bold text-secondary">+{points} XP</span>
+                <span className="text-sm font-bold text-secondary">+{points} points</span>
               </div>
               <input
                 type="range"
@@ -460,9 +742,9 @@ export default function CreateTask() {
                 className="w-full accent-secondary cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-outline mt-1 font-mono">
-                <span>50 XP</span>
-                <span>500 XP</span>
-                <span>1000 XP</span>
+                <span>50</span>
+                <span>500</span>
+                <span>1000</span>
               </div>
             </div>
 
@@ -470,7 +752,7 @@ export default function CreateTask() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold">
-                  Canonical Deadline
+                  Due Date &amp; Time
                 </label>
                 {fieldErrors.deadline && <span className="text-xs text-error font-medium">{fieldErrors.deadline}</span>}
               </div>
@@ -496,12 +778,20 @@ export default function CreateTask() {
                 {submitting ? (
                   <>
                     <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                    <span>Dispatching Task...</span>
+                    <span>{isEditing ? 'Saving Changes...' : 'Assigning Task...'}</span>
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[18px]">publish</span>
-                    <span>Dispatch &amp; Notify Fellow</span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      {isEditing ? 'save' : 'publish'}
+                    </span>
+                    <span>
+                      {isEditing
+                        ? 'Save Task Changes'
+                        : assignMode === 'all'
+                        ? 'Assign to All Interns'
+                        : `Assign to ${selectedInternIds.length} Intern${selectedInternIds.length === 1 ? '' : 's'}`}
+                    </span>
                   </>
                 )}
               </button>

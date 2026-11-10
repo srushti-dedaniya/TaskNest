@@ -12,8 +12,8 @@ export default function AdminLayout({ children }) {
     { to: '/admin/dashboard', icon: 'grid_view', label: 'Overview' },
     { to: '/admin/tasks', icon: 'checklist', label: 'Tasks' },
     { to: '/admin/tasks/create', icon: 'add_circle', label: 'Create Task' },
-    { to: '/admin/submissions', icon: 'inbox', label: 'Review Queue', badge: true },
-    { to: '/admin/interns', icon: 'group', label: 'Fellows' }
+    { to: '/admin/submissions', icon: 'inbox', label: 'Submissions', badge: true },
+    { to: '/admin/interns', icon: 'group', label: 'Interns' }
   ]
 
   const isActive = (path) => {
@@ -24,6 +24,30 @@ export default function AdminLayout({ children }) {
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    const trimmed = searchQuery.trim()
+    if (!trimmed) return
+    if (location.pathname.startsWith('/admin/interns')) {
+      navigate(`/admin/interns?q=${encodeURIComponent(trimmed)}`)
+    } else if (location.pathname.startsWith('/admin/submissions')) {
+      navigate(`/admin/submissions?q=${encodeURIComponent(trimmed)}`)
+    } else {
+      navigate(`/admin/tasks?q=${encodeURIComponent(trimmed)}`)
+    }
+  }
+
+  const handleClearSearch = () => {
+    setSearchQuery('')
+    if (location.pathname.startsWith('/admin/interns')) {
+      navigate('/admin/interns')
+    } else if (location.pathname.startsWith('/admin/submissions')) {
+      navigate('/admin/submissions')
+    } else if (location.pathname.startsWith('/admin/tasks')) {
+      navigate('/admin/tasks')
+    }
   }
 
   return (
@@ -72,16 +96,31 @@ export default function AdminLayout({ children }) {
         <div className="flex flex-col items-center gap-2 w-full px-2">
           <Link
             to="/admin/profile"
-            title="Governance & Settings"
+            title="Faculty Profile"
             className={`group relative flex items-center justify-center w-12 h-12 rounded-full transition-all ${
               location.pathname === '/admin/profile'
                 ? 'bg-primary text-on-primary shadow-sm'
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
             }`}
           >
-            <span className="material-symbols-outlined text-[22px]">tune</span>
+            <span className="material-symbols-outlined text-[22px]">account_circle</span>
             <span className="absolute left-16 px-2.5 py-1 bg-primary text-on-primary rounded font-label-xs-caps text-[11px] uppercase tracking-wider opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md z-50">
-              Settings & Profile
+              Profile
+            </span>
+          </Link>
+
+          <Link
+            to="/admin/settings"
+            title="Portal Settings"
+            className={`group relative flex items-center justify-center w-12 h-12 rounded-full transition-all ${
+              location.pathname === '/admin/settings'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[22px]">settings</span>
+            <span className="absolute left-16 px-2.5 py-1 bg-primary text-on-primary rounded font-label-xs-caps text-[11px] uppercase tracking-wider opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md z-50">
+              Settings
             </span>
           </Link>
 
@@ -114,13 +153,13 @@ export default function AdminLayout({ children }) {
           </Link>
           <div className="h-4 w-px bg-outline-variant/50 hidden sm:block" />
           <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-container-high font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">
-            Faculty Oversight
+            Faculty Portal
           </span>
         </div>
 
         {/* Center: Search Bar */}
         <div className="flex-1 max-w-md mx-6 hidden lg:block">
-          <div className="relative flex items-center w-full">
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full">
             <span className="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-[18px]">
               search
             </span>
@@ -128,13 +167,24 @@ export default function AdminLayout({ children }) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search fellows, submissions, rubrics, dossiers..."
-              className="w-full h-10 pl-10 pr-12 bg-surface-container-high/60 rounded-full font-body-sm text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest transition-all border border-outline-variant/20 focus:border-primary"
+              placeholder="Search tasks, interns, submissions... (press Enter)"
+              className="w-full h-10 pl-10 pr-16 bg-surface-container-high/60 rounded-full font-body-sm text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest transition-all border border-outline-variant/20 focus:border-primary"
             />
-            <span className="absolute right-3 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-xs-caps text-[9px] uppercase tracking-wider">
-              ⌘K
-            </span>
-          </div>
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-3 w-5 h-5 flex items-center justify-center rounded-full hover:bg-surface-container text-on-surface-variant hover:text-on-surface text-xs"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            ) : (
+              <span className="absolute right-3 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-xs-caps text-[9px] uppercase tracking-wider">
+                Enter
+              </span>
+            )}
+          </form>
         </div>
 
         {/* Right: Actions, Notifications, Profile */}
@@ -168,18 +218,18 @@ export default function AdminLayout({ children }) {
           <Link
             to="/admin/profile"
             className="flex items-center gap-2 pl-1 hover:opacity-90 transition-opacity"
-            title="Governance Profile"
+            title="Faculty Profile"
           >
             <div className="text-right hidden xl:block">
               <div className="font-title-md text-sm text-on-surface leading-tight font-medium">
-                {user?.name || 'Elena Rostova'}
+                {user?.name || 'Faculty Member'}
               </div>
               <div className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant">
-                {user?.title || 'Lead Architect'}
+                {user?.institution || 'Faculty / Admin'}
               </div>
             </div>
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-sm text-xs shadow-sm">
-              {user?.avatar || 'ER'}
+              {user?.avatar || (user?.name ? user.name.slice(0, 2).toUpperCase() : 'FA')}
             </div>
           </Link>
         </div>
@@ -214,7 +264,17 @@ export default function AdminLayout({ children }) {
               : 'text-on-surface-variant'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">tune</span>
+          <span className="material-symbols-outlined text-[20px]">account_circle</span>
+        </Link>
+        <Link
+          to="/admin/settings"
+          className={`flex flex-col items-center justify-center w-10 h-10 rounded-full transition-colors ${
+            location.pathname === '/admin/settings'
+              ? 'bg-primary text-on-primary shadow-xs'
+              : 'text-on-surface-variant'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[20px]">settings</span>
         </Link>
       </nav>
     </div>

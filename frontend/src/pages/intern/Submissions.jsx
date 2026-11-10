@@ -1,12 +1,39 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { submissionService } from '../../services/api.js'
 
 export default function Submissions() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialQuery = searchParams.get('q') || ''
+
   const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState(initialQuery)
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+
+  useEffect(() => {
+    const q = searchParams.get('q') || ''
+    setSearch(q)
+  }, [searchParams])
+
+  const handleSearchChange = (value) => {
+    setSearch(value)
+    const nextParams = new URLSearchParams(searchParams)
+    if (value.trim()) {
+      nextParams.set('q', value.trim())
+    } else {
+      nextParams.delete('q')
+    }
+    setSearchParams(nextParams, { replace: true })
+  }
+
+  const handleClearSearch = () => {
+    setSearch('')
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('q')
+    setSearchParams(nextParams, { replace: true })
+  }
 
   const loadSubmissions = async () => {
     try {
@@ -17,8 +44,8 @@ export default function Submissions() {
         (res?.submissions ?? []).map((s) => ({
           id: s._id || s.id,
           taskId: s.task?._id || s.task,
-          taskCode: s.task?.code || `SPEC-${(s.task?._id || s._id || '').slice(-4).toUpperCase() || '0841'}`,
-          taskTitle: s.task?.title || 'Distributed Monograph Deliverable',
+          taskCode: s.task?.code || `TASK-${(s.task?._id || s._id || '').slice(-4).toUpperCase() || '0841'}`,
+          taskTitle: s.task?.title || 'Assigned Task',
           status:
             s.status === 'approved'
               ? 'Approved'
@@ -47,6 +74,13 @@ export default function Submissions() {
   }, [])
 
   const filtered = submissions.filter((sub) => {
+    const matchesSearch =
+      !search.trim() ||
+      sub.taskTitle?.toLowerCase().includes(search.toLowerCase()) ||
+      sub.taskCode?.toLowerCase().includes(search.toLowerCase()) ||
+      sub.notes?.toLowerCase().includes(search.toLowerCase())
+
+    if (!matchesSearch) return false
     if (filter === 'all') return true
     if (filter === 'review') return sub.status === 'Under Review' || sub.status === 'Pending'
     if (filter === 'approved') return sub.status === 'Approved'
@@ -61,14 +95,14 @@ export default function Submissions() {
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-secondary" />
             <span className="font-label-xs-caps text-[11px] uppercase tracking-[0.2em] text-secondary font-semibold">
-              Dispatch Ledger // Fellowship Archive
+              Intern Portal // Submissions
             </span>
           </div>
           <h1 className="font-headline-lg text-3xl md:text-5xl text-primary tracking-tight font-medium">
             My Submissions
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Audit your submitted work, review faculty comments, track awarded experience points, and inspect verification artifacts.
+            View your submitted tasks, review faculty feedback, and track awarded points.
           </p>
         </div>
 
@@ -77,30 +111,57 @@ export default function Submissions() {
           className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-sm self-start lg:self-end"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
-          <span>Submit Another Task</span>
+          <span>Submit Task</span>
         </Link>
       </section>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 p-1.5 bg-surface-container rounded-full w-fit border border-outline-variant/20">
-        {[
-          { id: 'all', label: 'All Submissions' },
-          { id: 'review', label: 'Under Review' },
-          { id: 'approved', label: 'Approved & Awarded' }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setFilter(tab.id)}
-            className={`px-4 py-1.5 rounded-full font-label-xs-caps text-[11px] uppercase tracking-wider transition-all ${
-              filter === tab.id
-                ? 'bg-primary text-on-primary shadow-xs font-semibold'
-                : 'text-on-surface-variant hover:text-primary'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Filter and Search Bar */}
+      <div className="bg-surface-bright rounded-3xl p-4 md:p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Search */}
+        <div className="relative w-full md:w-80">
+          <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
+            search
+          </span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search submissions by title or code..."
+            className="w-full h-10 pl-10 pr-10 bg-surface-container rounded-full text-xs text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest border border-outline-variant/30"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center text-xs"
+              title="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-2 p-1.5 bg-surface-container rounded-full w-full md:w-auto border border-outline-variant/20">
+          {[
+            { id: 'all', label: 'All Submissions' },
+            { id: 'review', label: 'Under Review' },
+            { id: 'approved', label: 'Approved & Awarded' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setFilter(tab.id)}
+              className={`px-4 py-1.5 rounded-full font-label-xs-caps text-[11px] uppercase tracking-wider transition-all ${
+                filter === tab.id
+                  ? 'bg-primary text-on-primary shadow-xs font-semibold'
+                  : 'text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Submissions List */}
@@ -108,7 +169,7 @@ export default function Submissions() {
         {loading ? (
           <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
             <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-            <span>Querying Fellow Dispatch Ledger...</span>
+            <span>Loading submissions...</span>
           </div>
         ) : loadError ? (
           <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -122,8 +183,19 @@ export default function Submissions() {
             </span>
             <h3 className="font-headline-sm text-lg text-primary mt-2">No submissions recorded</h3>
             <p className="text-xs text-on-surface-variant mt-1">
-              Select an assigned daily task to dispatch your verification bundle.
+              {search
+                ? `No submissions matched "${search}". Try clearing your search.`
+                : 'Select an assigned daily task to submit your work.'}
             </p>
+            {search && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="mt-4 px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors"
+              >
+                Clear Search
+              </button>
+            )}
           </div>
         ) : (
           filtered.map((sub) => (
@@ -148,18 +220,18 @@ export default function Submissions() {
                     {sub.status}
                   </span>
                   <span className="text-xs text-on-surface-variant">
-                    Dispatched: {new Date(sub.submittedAt).toLocaleDateString()}
+                    Submitted: {new Date(sub.submittedAt).toLocaleDateString()}
                   </span>
                 </div>
 
                 {sub.pointsAwarded !== null && sub.pointsAwarded !== undefined ? (
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-xs font-bold">
                     <span className="material-symbols-outlined text-[16px] text-secondary">military_tech</span>
-                    <span>+{sub.pointsAwarded} XP Awarded</span>
+                    <span>+{sub.pointsAwarded} Pts Awarded</span>
                   </div>
                 ) : (
                   <span className="text-xs text-on-surface-variant font-medium">
-                    +{sub.pointsAvailable} XP Pending Review
+                    +{sub.pointsAvailable} Pts Pending Review
                   </span>
                 )}
               </div>
@@ -169,7 +241,7 @@ export default function Submissions() {
                   {sub.taskTitle}
                 </h3>
                 <p className="font-body-md text-xs sm:text-sm text-on-surface-variant mt-2 leading-relaxed bg-surface-container-low p-4 rounded-2xl border border-outline-variant/10">
-                  <strong className="text-primary font-mono text-xs">Submission Field Notes:</strong>
+                  <strong className="text-primary font-mono text-xs">Submission Notes:</strong>
                   <br />
                   "{sub.notes}"
                 </p>
@@ -178,8 +250,8 @@ export default function Submissions() {
               {sub.feedback && (
                 <div className="p-4 rounded-2xl bg-surface-container border border-outline-variant/20 space-y-1">
                   <div className="flex items-center gap-1.5 text-secondary text-xs font-semibold font-label-xs-caps uppercase tracking-wider">
-                    <span className="material-symbols-outlined text-[16px]">gavel</span>
-                    <span>Faculty Evaluation &amp; Critique</span>
+                    <span className="material-symbols-outlined text-[16px]">verified</span>
+                    <span>Faculty Feedback</span>
                   </div>
                   <p className="text-xs text-on-surface-variant italic leading-relaxed">
                     "{sub.feedback}"
@@ -197,7 +269,7 @@ export default function Submissions() {
                       className="inline-flex items-center gap-1 text-xs text-secondary hover:underline font-medium"
                     >
                       <span className="material-symbols-outlined text-[16px]">code</span>
-                      <span>View Repository Commit</span>
+                      <span>View Repository</span>
                     </a>
                   ) : null}
                 </span>
@@ -206,7 +278,7 @@ export default function Submissions() {
                   to={`/intern/submissions/${sub.id}`}
                   className="px-4 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-xs font-label-md text-primary transition-colors border border-outline-variant/30 flex items-center gap-1"
                 >
-                  <span>Monograph Codex</span>
+                  <span>Submission Details</span>
                   <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </Link>
               </div>

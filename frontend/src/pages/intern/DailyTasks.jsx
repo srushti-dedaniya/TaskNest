@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { taskService } from '../../services/api.js'
 import { useAuth } from '../../context/AuthContext.jsx'
 
@@ -13,12 +13,38 @@ const STATUS_LABELS = {
 
 export default function DailyTasks() {
   const { user } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialQuery = searchParams.get('q') || ''
+
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [filter, setFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(initialQuery)
+
+  useEffect(() => {
+    const q = searchParams.get('q') || ''
+    setSearch(q)
+  }, [searchParams])
+
+  const handleSearchChange = (value) => {
+    setSearch(value)
+    const nextParams = new URLSearchParams(searchParams)
+    if (value.trim()) {
+      nextParams.set('q', value.trim())
+    } else {
+      nextParams.delete('q')
+    }
+    setSearchParams(nextParams, { replace: true })
+  }
+
+  const handleClearSearch = () => {
+    setSearch('')
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('q')
+    setSearchParams(nextParams, { replace: true })
+  }
 
   const loadTasks = async () => {
     try {
@@ -32,7 +58,7 @@ export default function DailyTasks() {
           )
           return {
             id: t._id || t.id,
-            code: t.code || `SPEC-${(t._id || '').slice(-4).toUpperCase() || '0842'}`,
+            code: t.code || `TASK-${(t._id || '').slice(-4).toUpperCase() || '0842'}`,
             title: t.title,
             description: t.description,
             priority: t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : 'Medium',
@@ -82,36 +108,38 @@ export default function DailyTasks() {
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-secondary" />
             <span className="font-label-xs-caps text-[11px] tracking-[0.2em] text-secondary uppercase font-semibold">
-              Cohort 09 // Sprint 04
+              Intern Portal
             </span>
             <span className="text-outline-variant font-label-xs-caps">/</span>
             <span className="font-label-xs-caps text-[11px] text-on-surface-variant tracking-wider uppercase">
-              Cycle D-14
+              Daily Tasks
             </span>
           </div>
           <h1 className="font-headline-lg text-3xl md:text-5xl tracking-tight text-primary font-medium">
             Assigned Daily Tasks
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Deliberate micro-deliverables synchronized with cohort sprint cadence. Ensure rigor across benchmark suites and low-level protocol specs.
+            Track and complete your assigned daily tasks. Submit your code repository and links for faculty evaluation.
           </p>
         </div>
 
         <div className="flex items-center gap-4 bg-surface-container-high/60 px-5 py-3 rounded-2xl shadow-xs self-start md:self-end border border-outline-variant/30">
           <div className="flex flex-col">
             <span className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant">
-              Active Sprint Velocity
+              Tasks Assigned
             </span>
             <span className="font-headline-sm text-xl text-primary font-semibold">
-              94.8<span className="text-xs text-secondary font-normal ml-0.5">%</span>
+              {tasks.length}
             </span>
           </div>
           <div className="w-px h-8 bg-outline-variant/40" />
           <div className="flex flex-col">
             <span className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant">
-              Logged Time Today
+              Completed
             </span>
-            <span className="font-headline-sm text-xl text-primary font-semibold">5h 42m</span>
+            <span className="font-headline-sm text-xl text-primary font-semibold">
+              {tasks.filter((t) => t.status === 'Completed').length}
+            </span>
           </div>
         </div>
       </section>
@@ -126,10 +154,20 @@ export default function DailyTasks() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search tasks, codes, or keywords..."
-            className="w-full h-10 pl-10 pr-4 bg-surface-container rounded-full text-xs text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest border border-outline-variant/30"
+            className="w-full h-10 pl-10 pr-10 bg-surface-container rounded-full text-xs text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:bg-surface-container-lowest border border-outline-variant/30"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center text-xs"
+              title="Clear search"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Status Filter Tabs */}
@@ -174,7 +212,7 @@ export default function DailyTasks() {
         {/* Left: Task Cards (8 cols) */}
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center justify-between pb-1">
-            <h2 className="font-headline-sm text-xl text-primary font-medium">Sprint Deliverables</h2>
+            <h2 className="font-headline-sm text-xl text-primary font-medium">Daily Tasks</h2>
             <span className="font-label-xs-caps text-xs text-secondary font-semibold uppercase">
               {filteredTasks.length} {filteredTasks.length === 1 ? 'Task' : 'Tasks'} Available
             </span>
@@ -183,7 +221,7 @@ export default function DailyTasks() {
           {loading ? (
             <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
               <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-              <span>Loading Sprint Tasks...</span>
+              <span>Loading Daily Tasks...</span>
             </div>
           ) : loadError ? (
             <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -194,7 +232,18 @@ export default function DailyTasks() {
             <div className="bg-surface-bright rounded-3xl p-16 text-center border border-outline-variant/20 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)]">
               <span className="material-symbols-outlined text-4xl text-outline-variant">task</span>
               <h3 className="font-headline-sm text-lg text-primary mt-2">No matching tasks found</h3>
-              <p className="text-xs text-on-surface-variant mt-1">Try adjusting your filters or search terms.</p>
+              <p className="text-xs text-on-surface-variant mt-1">
+                {search ? `No tasks matched "${search}". Try clearing your search.` : 'Try adjusting your filters.'}
+              </p>
+              {search && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="mt-4 px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors"
+                >
+                  Clear Search
+                </button>
+              )}
             </div>
           ) : (
             filteredTasks.map((t) => (
@@ -216,7 +265,7 @@ export default function DailyTasks() {
                       >
                         {t.priority} Priority
                       </span>
-                      <span className="text-xs font-bold text-secondary">+{t.points} XP</span>
+                      <span className="text-xs font-bold text-secondary">+{t.points} Points</span>
                     </div>
 
                     <h3 className="font-title-lg text-lg text-primary font-semibold group-hover:text-secondary transition-colors">
@@ -230,7 +279,7 @@ export default function DailyTasks() {
                     <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
                       <span className="flex items-center gap-1">
                         <span className="material-symbols-outlined text-[15px] text-secondary">schedule</span>
-                        <span>Due Nov 20, 23:59 UTC</span>
+                        <span>{t.deadline ? `Due ${new Date(t.deadline).toLocaleDateString()}` : 'No deadline'}</span>
                       </span>
                       <span>•</span>
                       <span className="font-medium text-primary">Status: {t.status}</span>
@@ -242,7 +291,7 @@ export default function DailyTasks() {
                       to={`/intern/tasks/${t.id}`}
                       className="px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30"
                     >
-                      Spec Details
+                      View Details
                     </Link>
                     <Link
                       to={`/intern/tasks/${t.id}/submit`}
@@ -261,23 +310,27 @@ export default function DailyTasks() {
         {/* Right Sidebar: Cohort Summary Dock (4 cols) */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-surface-bright rounded-3xl p-6 md:p-7 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-4">
-            <h3 className="font-headline-sm text-lg text-primary font-medium">Sprint 04 Invariants</h3>
+            <h3 className="font-headline-sm text-lg text-primary font-medium">Task Overview</h3>
             <p className="text-xs text-on-surface-variant">
-              Deliberate micro-deliverables synchronized with cohort velocity.
+              Manage your daily deliverables and submit on time.
             </p>
 
             <div className="space-y-3 pt-2">
               <div className="p-3.5 rounded-2xl bg-surface-container-low flex items-center justify-between">
-                <span className="text-xs text-on-surface font-medium">Sprint Attainment</span>
-                <span className="text-xs font-mono font-bold text-secondary">78%</span>
+                <span className="text-xs text-on-surface font-medium">Total Tasks</span>
+                <span className="text-xs font-mono font-bold text-secondary">{tasks.length}</span>
               </div>
               <div className="p-3.5 rounded-2xl bg-surface-container-low flex items-center justify-between">
-                <span className="text-xs text-on-surface font-medium">Total XP In Play</span>
-                <span className="text-xs font-mono font-bold text-primary">1,450 XP</span>
+                <span className="text-xs text-on-surface font-medium">Completed</span>
+                <span className="text-xs font-mono font-bold text-primary">
+                  {tasks.filter((t) => t.status === 'Completed').length}
+                </span>
               </div>
               <div className="p-3.5 rounded-2xl bg-surface-container-low flex items-center justify-between">
-                <span className="text-xs text-on-surface font-medium">SLA Compliance Target</span>
-                <span className="text-xs font-mono font-bold text-secondary">98%</span>
+                <span className="text-xs text-on-surface font-medium">Total Points In Play</span>
+                <span className="text-xs font-mono font-bold text-secondary">
+                  {tasks.reduce((sum, t) => sum + (t.points || 0), 0)} Pts
+                </span>
               </div>
             </div>
 
@@ -286,7 +339,7 @@ export default function DailyTasks() {
                 to="/intern/submissions"
                 className="w-full py-2.5 px-4 rounded-full bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-xs transition-colors text-center block border border-outline-variant/30"
               >
-                View My Submissions Ledger →
+                View My Submissions →
               </Link>
             </div>
           </div>

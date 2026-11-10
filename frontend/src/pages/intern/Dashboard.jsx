@@ -45,14 +45,14 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
             <span className="font-label-xs-caps text-[11px] uppercase tracking-[0.2em] text-secondary font-semibold">
-              Cohort 09 // Sprint 04 Workspace
+              Intern Portal // Overview
             </span>
           </div>
           <h1 className="font-headline-lg text-3xl md:text-5xl text-primary tracking-tight font-medium">
-            Fellow Dashboard
+            Intern Dashboard
           </h1>
           <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-            Active daily tasks, weekly milestone objectives, and faculty verification updates for your distributed systems fellowship.
+            Active daily tasks, weekly milestone objectives, and faculty feedback for your internship.
           </p>
         </div>
 
@@ -155,7 +155,7 @@ export default function Dashboard() {
                             to={`/intern/tasks/${id}`}
                             className="px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30"
                           >
-                            Spec
+                            View
                           </Link>
                           <Link
                             to={`/intern/tasks/${id}/submit`}
@@ -173,18 +173,18 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Fellowship Discipline Note */}
+          {/* Internship Guidance Note */}
           <div className="relative overflow-hidden rounded-3xl bg-surface-container p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-xs border border-outline-variant/20">
             <div className="w-12 h-12 rounded-2xl bg-secondary text-on-secondary flex items-center justify-center shrink-0 shadow-sm">
-              <span className="material-symbols-outlined text-2xl">architecture</span>
+              <span className="material-symbols-outlined text-2xl">lightbulb</span>
             </div>
             <div>
               <span className="font-label-xs-caps text-[10px] uppercase tracking-widest text-secondary font-semibold">
-                Fellowship Discipline Invariant
+                Internship Tip
               </span>
-              <h4 className="font-headline-sm text-lg text-primary mt-0.5">Refinement Over Throughput</h4>
+              <h4 className="font-headline-sm text-lg text-primary mt-0.5">Focus On Quality &amp; Completeness</h4>
               <p className="font-body-sm text-xs text-on-surface-variant mt-1 leading-relaxed">
-                The atelier values clean memory safety proofs and reproducible latency curves over hurried code commits. Ensure unit benchmarks accompany every pull request.
+                Writing clean, well-tested code and providing clear repository and live demo links helps faculty quickly review and approve your submissions.
               </p>
             </div>
           </div>
@@ -196,9 +196,9 @@ export default function Dashboard() {
             <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
               <div>
                 <span className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">
-                  Sprint Status
+                  Progress Status
                 </span>
-                <h3 className="font-headline-sm text-lg text-primary font-medium">Summary Ledger</h3>
+                <h3 className="font-headline-sm text-lg text-primary font-medium">Summary</h3>
               </div>
               <div className="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
                 <span className="material-symbols-outlined text-[18px]">analytics</span>
@@ -209,13 +209,13 @@ export default function Dashboard() {
             <div className="bg-surface-container-low p-4 rounded-2xl flex items-center justify-between">
               <div>
                 <span className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant">
-                  Sprint Completion
+                  Completion Rate
                 </span>
                 <div className="font-display text-3xl text-primary font-medium mt-0.5">
-                  72<span className="text-sm text-secondary font-normal">%</span>
+                  {tasks.length > 0 ? Math.round((approvedCount / tasks.length) * 100) : 0}<span className="text-sm text-secondary font-normal">%</span>
                 </div>
                 <span className="text-[11px] text-on-surface-variant mt-1 block">
-                  {approvedCount} of {tasks.length || 14} tasks approved
+                  {approvedCount} of {tasks.length} tasks approved
                 </span>
               </div>
               <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-secondary">
@@ -231,31 +231,15 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <span className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant block">
-                    Accumulated XP
+                    Accumulated Points
                   </span>
-                  <span className="text-xs font-semibold text-primary">Fellow Standing</span>
+                  <span className="text-xs font-semibold text-primary">Intern Standing</span>
                 </div>
               </div>
               <div className="text-right">
                 <span className="font-headline-sm text-base text-secondary font-bold">
-                  {totalXP.toLocaleString()} XP
+                  {totalXP.toLocaleString()} Pts
                 </span>
-              </div>
-            </div>
-
-            {/* Assigned Mentor */}
-            <div className="pt-2 border-t border-outline-variant/20 space-y-2">
-              <span className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold block">
-                Assigned Mentor Lead
-              </span>
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-surface-container-low">
-                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-sm text-xs font-semibold shrink-0">
-                  ER
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-title-md text-xs text-primary font-semibold truncate">Elena Rostova, Ph.D.</p>
-                  <p className="text-[10px] text-on-surface-variant">Faculty Chair • Online</p>
-                </div>
               </div>
             </div>
 
@@ -265,7 +249,7 @@ export default function Dashboard() {
                 className="w-full py-3 px-4 rounded-full bg-secondary text-on-secondary font-label-md text-xs tracking-wider uppercase font-semibold shadow-xs hover:opacity-95 transition-all flex items-center justify-center gap-1.5 text-center"
               >
                 <span className="material-symbols-outlined text-[16px]">history_edu</span>
-                <span>View Submissions Ledger</span>
+                <span>View My Submissions</span>
               </Link>
             </div>
           </div>

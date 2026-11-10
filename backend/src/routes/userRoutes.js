@@ -10,6 +10,8 @@ router.use(requireAuth)
 
 /* Users */
 router.get('/users', requireAdmin, listInterns)
+router.get('/users/interns', requireAdmin, listInterns)
+router.get('/interns', requireAdmin, listInterns)
 router.get('/users/:internId', requireAdmin, getIntern)
 router.get('/users/:internId/points', requireAdmin, myPoints)
 router.get('/me/points', myPoints)

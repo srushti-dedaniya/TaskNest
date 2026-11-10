@@ -42,19 +42,15 @@ export default function TaskDetails() {
       <div className="flex flex-wrap items-center gap-space-xs font-label-xs-caps text-label-xs-caps uppercase tracking-wider text-on-surface-variant mb-space-md">
       <Link to="/intern/daily-tasks" className="hover:text-primary transition-colors" >Tasks</Link>
       <span className="text-outline/40">/</span>
-      <span className="hover:text-primary transition-colors cursor-pointer">Sprint 06</span>
-      <span className="text-outline/40">/</span>
-      <span className="text-secondary font-semibold">Distributed Consensus Raft Election Protocol</span>
+      <span className="text-secondary font-semibold">{title}</span>
       </div>
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
       <div className="max-w-3xl">
       <div className="inline-flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-xs-caps text-label-xs-caps uppercase tracking-widest mb-space-sm shadow-sm">
       <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-      <span>Sprint 06</span>
-      <span className="text-outline/40">•</span>
       <span>{type}</span>
       <span className="text-outline/40">•</span>
-      <span className="text-error font-semibold">{priority}</span>
+      <span className="text-secondary font-semibold">{priority}</span>
       </div>
       <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight leading-none mb-space-md">
                 {title}
@@ -62,31 +58,23 @@ export default function TaskDetails() {
       <div className="flex flex-wrap items-center gap-space-sm text-body-sm">
       <div className="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-xs-caps uppercase tracking-wider font-semibold shadow-sm">
       <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-                  In Progress
+                  Active Task
                 </div>
       <div className="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-surface-container-lowest text-primary font-label-xs-caps uppercase tracking-wider font-semibold shadow-sm">
       <span className="material-symbols-outlined text-[14px] text-secondary">military_tech</span>
-                  {points} XP Available
+                  {points} Points
                 </div>
       <div className="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-surface-container text-on-surface-variant font-label-xs-caps uppercase tracking-wider shadow-sm">
       <span className="material-symbols-outlined text-[14px]">schedule</span>
                   {deadline}
       </div>
-      <div className="inline-flex items-center gap-2 px-space-sm py-1 rounded-full bg-surface-container-high text-on-surface font-label-xs-caps tracking-wider shadow-sm">
-      <div className="w-4 h-4 rounded-full bg-primary text-on-primary flex items-center justify-center font-title-md text-[9px]">E</div>
-      <span>Mentor: Elena Rostova</span>
-      </div>
       </div>
       </div>
       <div className="flex items-center gap-space-sm">
-      <button className="px-space-md py-2.5 rounded-full bg-surface-container-lowest hover:bg-surface-container text-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-1.5">
-      <span className="material-symbols-outlined text-[18px]">bookmark_border</span>
-                Archive Dossier
-              </button>
-      <button className="px-space-md py-2.5 rounded-full bg-surface-container-lowest hover:bg-surface-container text-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-1.5">
-      <span className="material-symbols-outlined text-[18px]">share</span>
-                Share Spec
-              </button>
+      <Link to={submitTarget} className="px-5 py-2.5 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs transition-all shadow-sm flex items-center gap-1.5 font-semibold">
+      <span className="material-symbols-outlined text-[18px]">upload</span>
+        Submit Work
+      </Link>
       </div>
       </div>
       </div>
@@ -384,14 +372,10 @@ export default function TaskDetails() {
                 </p>
       </div>
       <div className="space-y-space-sm">
-      <Link to="/intern/submissions" className="w-full py-3 px-space-md rounded-full bg-secondary hover:bg-secondary/90 text-on-secondary font-title-md text-title-md text-center flex items-center justify-center gap-2 transition-all shadow-md group" >
+      <Link to={submitTarget} className="w-full py-3 px-space-md rounded-full bg-secondary hover:bg-secondary/90 text-on-secondary font-title-md text-title-md text-center flex items-center justify-center gap-2 transition-all shadow-md group" >
       <span>Proceed to Submit Task</span>
       <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
       </Link>
-      <button className="w-full py-2.5 px-space-md rounded-full bg-primary-container hover:bg-surface-tint/30 text-primary-fixed font-title-md text-body-md text-center flex items-center justify-center gap-2 transition-all">
-      <span className="material-symbols-outlined text-[16px]">chat_bubble_outline</span>
-                  Request Mentor Clarification
-                </button>
       </div>
       </div>
       <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05),0_2px_6px_-1px_rgba(53,51,45,0.03)]">
