@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { taskService, submissionService } from '../../services/api.js'
+import { taskService, submissionService, reminderService } from '../../services/api.js'
 import { useAuth } from '../../context/AuthContext.jsx'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const [tasks, setTasks] = useState([])
   const [submissions, setSubmissions] = useState([])
+  const [schedule, setSchedule] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
@@ -15,13 +16,15 @@ export default function Dashboard() {
       try {
         setLoading(true)
         setLoadError('')
-        const [taskRes, subRes] = await Promise.allSettled([
+        const [taskRes, subRes, schedRes] = await Promise.allSettled([
           taskService.list(),
-          submissionService.list()
+          submissionService.list(),
+          reminderService.getMySchedule()
         ])
 
         setTasks(taskRes.status === 'fulfilled' ? taskRes.value?.tasks ?? [] : [])
         setSubmissions(subRes.status === 'fulfilled' ? subRes.value?.submissions ?? [] : [])
+        setSchedule(schedRes.status === 'fulfilled' ? schedRes.value?.schedule ?? [] : [])
 
         if (taskRes.status === 'rejected' && subRes.status === 'rejected') {
           setLoadError('Could not load dashboard data. Is the backend running?')
@@ -36,6 +39,38 @@ export default function Dashboard() {
   const activeTasks = tasks.slice(0, 4)
   const approvedCount = submissions.filter((s) => s.status === 'approved' || s.status === 'Approved').length
   const totalXP = user?.points ?? 0
+
+  function formatLocalTime(isoString) {
+    if (!isoString) return 'No deadline'
+    const d = new Date(isoString)
+    return d.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  function getTimeRemainingText(diffMs) {
+    if (diffMs < 0) {
+      const minsOver = Math.abs(Math.floor(diffMs / 60000))
+      if (minsOver < 60) return `Overdue by ${minsOver}m`
+      const hoursOver = Math.floor(minsOver / 60)
+      return `Overdue by ${hoursOver}h`
+    }
+    const mins = Math.floor(diffMs / 60000)
+    if (mins < 60) return `${mins}m left`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}h left`
+    const days = Math.floor(hours / 24)
+    return `${days}d left`
+  }
+
+  // Active deadline alerts (exclude completed)
+  const pendingDeadlines = schedule.filter((s) => s.status !== 'completed')
+  const overdueOrUrgentCount = pendingDeadlines.filter(
+    (s) => s.urgency === 'overdue' || s.urgency === 'critical' || s.label === 'Due in 1 Hour'
+  ).length
 
   return (
     <div className="space-y-8">
@@ -78,6 +113,118 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8">
         {/* Left: Active Deliverables & Feed (8 Cols) */}
         <div className="lg:col-span-8 space-y-8">
+          {/* Deadline Reminder Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-xl">alarm</span>
+                <h2 className="font-headline-sm text-xl text-primary font-medium">Deadline Reminders</h2>
+                {overdueOrUrgentCount > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-error-container text-on-error-container animate-pulse">
+                    {overdueOrUrgentCount} Urgent
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-on-surface-variant font-mono">
+                Auto-updated in local time
+              </span>
+            </div>
+
+            {loading ? (
+              <div className="py-6 text-center text-on-surface-variant text-xs flex items-center justify-center gap-2 bg-surface-bright rounded-2xl border border-outline-variant/20">
+                <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                <span>Checking upcoming deadlines...</span>
+              </div>
+            ) : schedule.length === 0 ? (
+              <div className="bg-surface-bright rounded-2xl p-6 text-center border border-outline-variant/20">
+                <p className="text-xs text-on-surface-variant">No tasks scheduled at this moment.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {schedule.map((item) => {
+                  const isOverdue = item.urgency === 'overdue'
+                  const is1H = item.urgency === 'critical' || item.label === 'Due in 1 Hour'
+                  const isToday = item.label === 'Due Today'
+                  const isTomorrow = item.label === 'Due Tomorrow'
+                  const isCompleted = item.status === 'completed'
+                  const isSubmitted = item.status === 'submitted'
+
+                  const badgeStyle = isCompleted
+                    ? 'bg-[#e8e2d7] text-[#49473f] border-[#cbc6bc]'
+                    : isSubmitted
+                    ? 'bg-secondary-container text-on-secondary-container border-[#e3c0a0]'
+                    : isOverdue
+                    ? 'bg-error-container text-on-error-container border-error/30 animate-pulse'
+                    : is1H
+                    ? 'bg-error-container text-on-error-container border-error/30 animate-pulse'
+                    : isToday
+                    ? 'bg-[#ffdcbd] text-[#5a422a] border-[#e3c0a0]'
+                    : isTomorrow
+                    ? 'bg-surface-container-high text-secondary border-outline-variant/30'
+                    : 'bg-surface-container text-on-surface-variant border-outline-variant/20'
+
+                  return (
+                    <div
+                      key={item.taskId}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col justify-between gap-3 shadow-xs ${
+                        isOverdue
+                          ? 'bg-[#fff5f5] border-error/40'
+                          : is1H
+                          ? 'bg-[#fff9f4] border-secondary/60'
+                          : 'bg-surface-bright border-outline-variant/25 hover:border-secondary/40'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badgeStyle}`}>
+                            {item.label}
+                          </span>
+                          <span className="text-[11px] font-semibold text-on-surface-variant">
+                            {isCompleted ? 'Done' : isSubmitted ? 'Submitted' : getTimeRemainingText(item.diffMs)}
+                          </span>
+                        </div>
+
+                        <h4 className="font-title-md text-sm font-semibold text-primary line-clamp-1">
+                          {item.title}
+                        </h4>
+
+                        <div className="mt-2 flex flex-col gap-1 text-[11px] text-on-surface-variant">
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[14px] text-secondary">event</span>
+                            <span><strong>Deadline:</strong> {formatLocalTime(item.deadline)}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[14px] text-outline">notifications_active</span>
+                            <span>
+                              <strong>Reminders:</strong>{' '}
+                              {item.remindersSent?.length > 0
+                                ? item.remindersSent
+                                    .map((r) => r.replace('TASK_DEADLINE_', '').replace('TASK_', '').toLowerCase())
+                                    .join(', ') + ' sent'
+                                : 'Scheduled automatically'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-outline-variant/15 flex items-center justify-between">
+                        <span className="text-[11px] font-medium text-secondary">
+                          +{item.points} XP Available
+                        </span>
+                        <Link
+                          to={`/intern/tasks/${item.taskId}`}
+                          className="px-3 py-1 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-container transition-colors"
+                        >
+                          {isCompleted ? 'View Task' : isSubmitted ? 'View Submission' : 'Submit Task →'}
+                        </Link>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Active Tasks Feed */}
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-1">

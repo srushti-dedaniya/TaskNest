@@ -8,6 +8,18 @@ export default function Notifications() {
   const [loadError, setLoadError] = useState('')
   const [filter, setFilter] = useState('all')
 
+  function formatCategory(category = '') {
+    const cat = category.toUpperCase()
+    if (cat.includes('DEADLINE_24H')) return 'Deadline: 24h'
+    if (cat.includes('DEADLINE_1H')) return 'Deadline: 1h'
+    if (cat.includes('DEADLINE_NOW')) return 'Deadline Now'
+    if (cat.includes('OVERDUE')) return 'Task Overdue'
+    if (cat.includes('TASK_ASSIGNED')) return 'Task Assigned'
+    if (cat.includes('REVIEW')) return 'Faculty Review'
+    if (cat.includes('POINTS')) return 'Points'
+    return category
+  }
+
   const loadNotifications = async () => {
     try {
       setLoading(true)
@@ -43,6 +55,12 @@ export default function Notifications() {
   const filteredNotifications = notifications.filter((n) => {
     if (filter === 'all') return true
     if (filter === 'unread') return !n.read
+    if (filter === 'deadline') {
+      return (
+        n.category?.toLowerCase().includes('deadline') ||
+        n.category?.toLowerCase().includes('overdue')
+      )
+    }
     return n.category?.toLowerCase().includes(filter.toLowerCase())
   })
 
@@ -100,11 +118,12 @@ export default function Notifications() {
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 bg-surface-container rounded-full w-fit border border-outline-variant/20">
         {[
-          { id: 'all', label: 'All Signals' },
+          { id: 'all', label: 'All Notifications' },
           { id: 'unread', label: 'Unread Only' },
-          { id: 'review', label: 'Reviews' },
+          { id: 'deadline', label: 'Deadlines' },
           { id: 'task', label: 'Assignments' },
-          { id: 'points', label: 'XP & Honors' }
+          { id: 'review', label: 'Reviews' },
+          { id: 'points', label: 'Points' }
         ].map((tab) => (
           <button
             key={tab.id}
@@ -163,7 +182,9 @@ export default function Notifications() {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[20px]">
-                    {notif.category?.includes('review')
+                    {notif.category?.toUpperCase().includes('DEADLINE') || notif.category?.toUpperCase().includes('OVERDUE')
+                      ? 'alarm'
+                      : notif.category?.includes('review')
                       ? 'rate_review'
                       : notif.category?.includes('points') || notif.category?.includes('honors')
                       ? 'military_tech'
@@ -174,7 +195,7 @@ export default function Notifications() {
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-label-xs-caps text-[10px] uppercase font-semibold text-secondary">
-                      {notif.category}
+                      {formatCategory(notif.category)}
                     </span>
                     <span className="text-outline-variant text-xs">•</span>
                     <span className="text-xs text-on-surface-variant font-mono">
@@ -199,10 +220,12 @@ export default function Notifications() {
                 {notif.link && (
                   <Link
                     to={notif.link}
-                    className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
-                    title="View related item"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-container transition-colors shadow-xs"
+                    title="View related task"
                   >
-                    <span className="material-symbols-outlined text-[18px]">arrow_outward</span>
+                    <span>View</span>
+                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                   </Link>
                 )}
               </div>

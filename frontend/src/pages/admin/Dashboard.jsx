@@ -9,12 +9,13 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts'
-import { submissionService, taskService } from '../../services/api.js'
+import { submissionService, taskService, reminderService } from '../../services/api.js'
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([])
   const [tasks, setTasks] = useState([])
   const [stats, setStats] = useState(null)
+  const [deadlineOverview, setDeadlineOverview] = useState(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
@@ -23,10 +24,11 @@ export default function AdminDashboard() {
       try {
         setLoading(true)
         setLoadError('')
-        const [subRes, taskRes, statsRes] = await Promise.allSettled([
+        const [subRes, taskRes, statsRes, deadRes] = await Promise.allSettled([
           submissionService.list(),
           taskService.list(),
-          taskService.stats()
+          taskService.stats(),
+          reminderService.getOverview()
         ])
 
         setSubmissions(
@@ -34,6 +36,7 @@ export default function AdminDashboard() {
         )
         setTasks(taskRes.status === 'fulfilled' ? taskRes.value?.tasks ?? [] : [])
         setStats(statsRes.status === 'fulfilled' ? statsRes.value ?? null : null)
+        setDeadlineOverview(deadRes.status === 'fulfilled' ? deadRes.value?.overview ?? null : null)
 
         const rejected = [subRes, taskRes, statsRes].filter((r) => r.status === 'rejected')
         if (rejected.length === 3) {
@@ -188,6 +191,187 @@ export default function AdminDashboard() {
           </div>
           <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
             <span>Registered Interns</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Deadline & Overdue Monitoring Section */}
+      <section className="bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant/20 pb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="material-symbols-outlined text-secondary text-xl">alarm</span>
+              <h3 className="font-headline-sm text-xl text-primary font-medium">
+                Deadline &amp; Overdue Monitoring
+              </h3>
+              {(deadlineOverview?.overdueCount || 0) > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-error-container text-on-error-container animate-pulse">
+                  {deadlineOverview.overdueCount} Overdue
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-on-surface-variant">
+              Live tracking of upcoming deadlines and interns with pending deliverables.
+            </p>
+          </div>
+          <Link
+            to="/admin/tasks"
+            className="text-xs text-secondary hover:underline font-label-md shrink-0 flex items-center gap-1"
+          >
+            <span>Manage All Tasks</span>
+            <span>→</span>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Column 1: Overdue Tasks with Pending Interns */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-error flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-error" />
+                Overdue Tasks ({deadlineOverview?.overdueTasks?.length || 0})
+              </h4>
+              <span className="text-[11px] text-on-surface-variant">
+                Unsubmitted work
+              </span>
+            </div>
+
+            {(!deadlineOverview?.overdueTasks || deadlineOverview.overdueTasks.length === 0) ? (
+              <div className="p-6 rounded-2xl bg-surface-container-low text-center border border-outline-variant/20 text-xs text-on-surface-variant">
+                ✓ No overdue tasks. All deadlines are on track!
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {deadlineOverview.overdueTasks.slice(0, 4).map((t) => (
+                  <div
+                    key={t._id}
+                    className="p-4 rounded-2xl border border-error/30 bg-[#fff8f8] flex flex-col gap-2.5 shadow-xs"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-error-container text-on-error-container font-bold">
+                            OVERDUE
+                          </span>
+                          <span className="text-xs font-semibold text-primary">
+                            {t.title}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-on-surface-variant mt-1">
+                          Deadline was {new Date(t.deadline).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                        </p>
+                      </div>
+                      <Link
+                        to={`/admin/tasks`}
+                        className="px-2.5 py-1 rounded-full bg-primary text-white text-[11px] font-medium hover:bg-primary-container shrink-0"
+                      >
+                        Inspect
+                      </Link>
+                    </div>
+
+                    {/* Unsubmitted Interns List */}
+                    <div className="pt-2 border-t border-error/15">
+                      <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider block mb-1.5">
+                        Interns pending submission ({t.unsubmittedInterns?.length || 0}):
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {t.unsubmittedInterns?.map((a, idx) => {
+                          const intern = a.intern
+                          return (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-error/25 text-xs text-primary shadow-2xs"
+                            >
+                              <span className="font-medium">{intern?.name || 'Intern'}</span>
+                              <span className="text-[10px] text-error font-semibold">({a.status})</span>
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Column 2: Approaching Deadlines (< 24h) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-secondary" />
+                Approaching Deadlines &lt; 24h ({deadlineOverview?.approachingTasks?.length || 0})
+              </h4>
+              <span className="text-[11px] text-on-surface-variant">
+                Due soon
+              </span>
+            </div>
+
+            {(!deadlineOverview?.approachingTasks || deadlineOverview.approachingTasks.length === 0) ? (
+              <div className="p-6 rounded-2xl bg-surface-container-low text-center border border-outline-variant/20 text-xs text-on-surface-variant">
+                No tasks due in the next 24 hours.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {deadlineOverview.approachingTasks.slice(0, 4).map((t) => (
+                  <div
+                    key={t._id}
+                    className="p-4 rounded-2xl border border-secondary/30 bg-surface-bright flex flex-col gap-2.5 shadow-xs"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-bold">
+                            DUE SOON
+                          </span>
+                          <span className="text-xs font-semibold text-primary">
+                            {t.title}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-on-surface-variant mt-1">
+                          Deadline: {new Date(t.deadline).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                        </p>
+                      </div>
+                      <Link
+                        to={`/admin/tasks`}
+                        className="px-2.5 py-1 rounded-full bg-primary text-white text-[11px] font-medium hover:bg-primary-container shrink-0"
+                      >
+                        View
+                      </Link>
+                    </div>
+
+                    {/* Intern Progress */}
+                    <div className="pt-2 border-t border-outline-variant/15">
+                      <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider block mb-1.5">
+                        Assigned Interns Status:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(t.assignments || []).map((a, idx) => {
+                          const intern = a.intern
+                          const isDone = a.status === 'completed'
+                          const isSub = a.status === 'submitted'
+                          return (
+                            <span
+                              key={idx}
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border ${
+                                isDone
+                                  ? 'bg-[#f0f9f0] border-green-300 text-green-800'
+                                  : isSub
+                                  ? 'bg-secondary-container border-[#e3c0a0] text-on-secondary-container'
+                                  : 'bg-surface-container border-outline-variant/30 text-on-surface-variant'
+                              }`}
+                            >
+                              <span className="font-medium">{intern?.name || 'Intern'}</span>
+                              <span className="text-[10px] opacity-80">({a.status})</span>
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

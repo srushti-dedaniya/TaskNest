@@ -223,6 +223,73 @@ export const emailService = {
       }),
     })
   },
+
+  sendDeadlineReminder: async ({ user, task, stage, formattedDeadline }) => {
+    const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
+    const taskUrl = `${clientUrl}/intern/tasks/${task._id}`
+
+    const stageConfig = {
+      TASK_DEADLINE_24H: {
+        subject: `TaskNest Reminder: "${task.title}" is due in 24 hours`,
+        title: 'Task Due Tomorrow (24h Reminder)',
+        headline: 'Your task deadline is approaching in 24 hours.',
+        badgeColor: '#74593f',
+      },
+      TASK_DEADLINE_1H: {
+        subject: `TaskNest Urgent: "${task.title}" is due in 1 hour`,
+        title: 'Urgent: Task Due in 1 Hour',
+        headline: 'Final reminder: only 1 hour remaining to submit your deliverable.',
+        badgeColor: '#ba1a1a',
+      },
+      TASK_DEADLINE_NOW: {
+        subject: `TaskNest Alert: "${task.title}" deadline reached`,
+        title: 'Task Deadline Reached',
+        headline: 'The scheduled deadline for this task has arrived.',
+        badgeColor: '#ba1a1a',
+      },
+      TASK_OVERDUE: {
+        subject: `TaskNest Action Required: "${task.title}" is Overdue`,
+        title: 'Task Overdue — Action Required',
+        headline: 'This task has passed its deadline and is now marked overdue.',
+        badgeColor: '#93000a',
+      },
+    }
+
+    const cfg = stageConfig[stage] || stageConfig.TASK_DEADLINE_24H
+
+    return sendEmail({
+      to: user.email,
+      subject: cfg.subject,
+      text: `Hello ${user.name},\n\n${cfg.headline}\nTask: ${task.title}\nDeadline: ${formattedDeadline}\nAvailable Points: ${task.points} XP\n\nPlease view the task and submit your work here:\n${taskUrl}`,
+      html: baseHtmlTemplate({
+        title: cfg.title,
+        preheader: `${cfg.title}: ${task.title}`,
+        bodyHtml: `
+          <p>Hello <strong>${user.name}</strong>,</p>
+          <p style="font-size:15px;color:#201e19;font-weight:500;">
+            ${cfg.headline}
+          </p>
+          <div style="background:#f9f7f2;padding:16px 20px;border-radius:12px;margin:16px 0;border-left:4px solid ${cfg.badgeColor};">
+            <div style="font-size:12px;color:#74593f;font-weight:700;text-transform:uppercase;">
+              Deliverable Details
+            </div>
+            <div style="font-size:18px;color:#201e19;font-weight:600;margin:6px 0;">
+              ${task.title}
+            </div>
+            <div style="font-size:13px;color:#504d44;margin-top:4px;">
+              <strong>Deadline:</strong> ${formattedDeadline}<br/>
+              <strong>Reward:</strong> +${task.points} XP Points
+            </div>
+          </div>
+          <p style="font-size:13px;color:#6e6a5f;">
+            Make sure to push your code to your repository and submit your deliverable link for faculty review.
+          </p>
+        `,
+        ctaText: 'View Task & Submit →',
+        ctaUrl: taskUrl,
+      }),
+    })
+  },
 }
 
 export default emailService

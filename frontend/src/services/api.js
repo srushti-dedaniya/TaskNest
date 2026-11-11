@@ -118,4 +118,16 @@ export const notificationService = {
   markAllRead: () => apiClient.post('/notifications/read-all')
 }
 
+export const aiService = {
+  askHelp: (message, history = []) => apiClient.post('/ai/help', { message, history }),
+  getSuggestedQuestions: () => apiClient.get('/ai/suggested-questions'),
+  generateTaskDescription: (data) => apiClient.post('/ai/generate-task-description', data)
+}
+
+export const reminderService = {
+  getMySchedule: () => apiClient.get('/reminders/my-schedule'),
+  getOverview: () => apiClient.get('/reminders/overview'),
+  triggerCheck: (now) => apiClient.post('/reminders/check', { now })
+}
+
 export default apiClient

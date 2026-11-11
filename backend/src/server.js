@@ -13,6 +13,9 @@ import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js'
 import authRoutes from './routes/authRoutes.js'
 import taskRoutes from './routes/taskSubmissionRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+import aiRoutes from './routes/aiRoutes.js'
+import reminderRoutes from './routes/reminderRoutes.js'
+import { startDeadlineScheduler, stopDeadlineScheduler } from './services/reminderService.js'
 
 const app = express()
 
@@ -31,6 +34,10 @@ app.use(cookieParser())
 
 app.get('/healthz', (_req, res) => res.json({ ok: true, uptime: process.uptime() }))
 app.use('/api/auth', authRoutes)
+app.use('/api/ai', aiRoutes)
+app.use('/api', aiRoutes)
+app.use('/api/reminders', reminderRoutes)
+app.use('/api', reminderRoutes)
 app.use('/api', taskRoutes)
 app.use('/api', userRoutes)
 
@@ -61,9 +68,13 @@ async function start() {
       // ignore
     }
 
-    server = app.listen(PORT, () => console.log(`[api] TaskNest API listening on http://localhost:${PORT}`))
+    server = app.listen(PORT, () => {
+      console.log(`[api] TaskNest API listening on http://localhost:${PORT}`)
+      startDeadlineScheduler()
+    })
 
     const shutdown = () => {
+      stopDeadlineScheduler()
       if (forwarder) forwarder.close()
       if (server) server.close()
     }

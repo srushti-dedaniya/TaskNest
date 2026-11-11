@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
-import { taskService, userService } from '../../services/api.js'
+import { taskService, userService, aiService } from '../../services/api.js'
+import { Sparkles, Bot, RefreshCw, Check, ChevronDown, ChevronUp, Lightbulb } from 'lucide-react'
 
 export default function CreateTask() {
   const navigate = useNavigate()
@@ -39,6 +40,19 @@ export default function CreateTask() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
+
+  // AI Task Description Helper state
+  const [showAiHelper, setShowAiHelper] = useState(true)
+  const [aiTaskIdea, setAiTaskIdea] = useState('')
+  const [aiCategory, setAiCategory] = useState('Frontend & UI')
+  const [aiDifficulty, setAiDifficulty] = useState('Intermediate')
+  const [aiExpectedOutcome, setAiExpectedOutcome] = useState('')
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiError, setAiError] = useState('')
+  const [aiGeneratedResult, setAiGeneratedResult] = useState(null)
+  const [aiEditableTitle, setAiEditableTitle] = useState('')
+  const [aiEditableDescription, setAiEditableDescription] = useState('')
+  const [aiAppliedNotification, setAiAppliedNotification] = useState('')
 
   // Load interns list
   useEffect(() => {
@@ -160,6 +174,52 @@ export default function CreateTask() {
 
   const handleRemoveRubric = (index) => {
     setRubric(rubric.filter((_, i) => i !== index))
+  }
+
+  // AI Task Description Generator Handlers
+  const handleGenerateDescription = async () => {
+    if (!aiTaskIdea.trim()) {
+      setAiError('Please enter a task idea before generating.')
+      return
+    }
+    setAiError('')
+    setAiGenerating(true)
+    try {
+      const res = await aiService.generateTaskDescription({
+        taskIdea: aiTaskIdea.trim(),
+        category: aiCategory,
+        difficulty: aiDifficulty,
+        expectedOutcome: aiExpectedOutcome.trim()
+      })
+      setAiGeneratedResult(res)
+      setAiEditableTitle(res.title || '')
+      setAiEditableDescription(res.description || '')
+    } catch (err) {
+      setAiError(err.message || 'Failed to generate task description.')
+    } finally {
+      setAiGenerating(false)
+    }
+  }
+
+  const handleApplyGeneratedDescription = () => {
+    if (aiEditableTitle.trim()) {
+      setTitle(aiEditableTitle.trim())
+    }
+    if (aiEditableDescription.trim()) {
+      setDescription(aiEditableDescription.trim())
+    }
+    if (
+      aiGeneratedResult?.instructions &&
+      Array.isArray(aiGeneratedResult.instructions) &&
+      aiGeneratedResult.instructions.length > 0
+    ) {
+      setInstructions(aiGeneratedResult.instructions)
+    }
+    if (aiCategory) {
+      setCategory(aiCategory)
+    }
+    setAiAppliedNotification('✓ AI-generated title and structured description applied to form!')
+    setTimeout(() => setAiAppliedNotification(''), 4500)
   }
 
   const handleSubmit = async (e) => {
@@ -338,6 +398,227 @@ export default function CreateTask() {
                 <span>Weekly Goal</span>
               </button>
             </div>
+          </div>
+
+          {/* AI Task Description Helper Section */}
+          <div className="bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-secondary/35 space-y-5 relative overflow-hidden transition-all">
+            {/* Header with badge and collapse toggle */}
+            <div className="flex items-start justify-between gap-3 border-b border-outline-variant/20 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#74593f] text-[#ffdcbd] flex items-center justify-center shadow-sm shrink-0">
+                  <Sparkles className="w-5 h-5 text-[#fed9b8]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-headline-sm text-lg sm:text-xl text-primary font-medium">
+                      Create Task with AI
+                    </h3>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container">
+                      AI Helper
+                    </span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-0.5">
+                    Enter a short task idea to generate a structured, intern-ready description.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowAiHelper(!showAiHelper)}
+                className="p-1.5 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors"
+                title={showAiHelper ? 'Minimize AI Helper' : 'Expand AI Helper'}
+              >
+                {showAiHelper ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {aiAppliedNotification && (
+              <div className="p-3.5 rounded-xl bg-secondary-container text-on-secondary-container text-xs font-semibold flex items-center gap-2 animate-fadeIn">
+                <Check className="w-4 h-4 text-secondary shrink-0" />
+                <span>{aiAppliedNotification}</span>
+              </div>
+            )}
+
+            {showAiHelper && (
+              <div className="space-y-4 pt-1">
+                {/* Task Idea Input */}
+                <div>
+                  <label className="block text-xs font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1.5">
+                    Task Idea *
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={aiTaskIdea}
+                    onChange={(e) => setAiTaskIdea(e.target.value)}
+                    placeholder="Example: Build a responsive login page using React."
+                    className="w-full p-3.5 rounded-xl bg-surface-container-high/50 text-sm text-primary border border-outline-variant/30 focus:outline-none focus:bg-white focus:ring-2 focus:ring-secondary/25 transition-all resize-none"
+                  />
+                  {/* Quick example prompt chips */}
+                  <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                    <span className="text-[10px] font-semibold text-outline uppercase tracking-wider flex items-center gap-1">
+                      <Lightbulb className="w-3 h-3 text-secondary" />
+                      Ideas:
+                    </span>
+                    {[
+                      'Build a responsive login page using React',
+                      'Design JWT authentication API with Express',
+                      'Create MongoDB schema for ecommerce products',
+                      'Write comprehensive unit tests with Jest'
+                    ].map((idea, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setAiTaskIdea(idea)}
+                        className="text-[11px] px-2.5 py-1 rounded-full bg-surface-container hover:bg-secondary-container text-on-surface-variant hover:text-on-secondary-container transition-colors border border-outline-variant/20"
+                      >
+                        {idea}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Optional Selectors Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
+                      Category (Optional)
+                    </label>
+                    <select
+                      value={aiCategory}
+                      onChange={(e) => setAiCategory(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none"
+                    >
+                      <option>Frontend &amp; UI</option>
+                      <option>Backend &amp; API</option>
+                      <option>Full Stack</option>
+                      <option>Database &amp; Storage</option>
+                      <option>Testing &amp; QA</option>
+                      <option>Documentation</option>
+                      <option>General Engineering</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
+                      Difficulty (Optional)
+                    </label>
+                    <select
+                      value={aiDifficulty}
+                      onChange={(e) => setAiDifficulty(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none"
+                    >
+                      <option>Beginner</option>
+                      <option>Intermediate</option>
+                      <option>Advanced</option>
+                      <option>All Levels</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-label-xs-caps uppercase text-on-surface-variant font-semibold mb-1">
+                      Expected Outcome (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={aiExpectedOutcome}
+                      onChange={(e) => setAiExpectedOutcome(e.target.value)}
+                      placeholder="e.g. Tested component on GitHub"
+                      className="w-full h-10 px-3 rounded-xl bg-surface-container-high/60 text-xs text-primary border border-outline-variant/30 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {aiError && (
+                  <p className="text-xs text-error font-medium">{aiError}</p>
+                )}
+
+                {/* Generate Button */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={handleGenerateDescription}
+                    disabled={aiGenerating || !aiTaskIdea.trim()}
+                    className="w-full py-3 px-5 rounded-xl bg-[#74593f] hover:bg-[#5a422a] disabled:opacity-50 disabled:cursor-not-allowed text-white font-label-md text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm transform active:scale-[0.99]"
+                  >
+                    {aiGenerating ? (
+                      <>
+                        <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                        <span>Creating your task description...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 text-[#ffdcbd]" />
+                        <span>Generate Description</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Generated Result Preview */}
+                {aiGeneratedResult && (
+                  <div className="mt-4 pt-4 border-t border-outline-variant/25 space-y-3.5 bg-surface-container-lowest/60 rounded-2xl p-4 sm:p-5 border">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5" />
+                        AI-Generated Task Draft
+                      </span>
+                      <span className="text-[10px] text-on-surface-variant font-mono">
+                        Source: {aiGeneratedResult.source === 'ai' ? 'Live AI' : 'Verified Template'}
+                      </span>
+                    </div>
+
+                    {/* Editable Title */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                        Suggested Title (Editable)
+                      </label>
+                      <input
+                        type="text"
+                        value={aiEditableTitle}
+                        onChange={(e) => setAiEditableTitle(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-white text-xs sm:text-sm font-semibold text-primary border border-outline-variant/30 focus:outline-none focus:ring-1 focus:ring-secondary"
+                      />
+                    </div>
+
+                    {/* Editable Description */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                        Structured Description Preview (Editable)
+                      </label>
+                      <textarea
+                        rows={10}
+                        value={aiEditableDescription}
+                        onChange={(e) => setAiEditableDescription(e.target.value)}
+                        className="w-full p-3.5 rounded-xl bg-white text-xs sm:text-sm text-primary font-mono border border-outline-variant/30 focus:outline-none focus:ring-1 focus:ring-secondary leading-relaxed"
+                      />
+                    </div>
+
+                    {/* Action Buttons: Regenerate & Use This Description */}
+                    <div className="flex items-center justify-between gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={handleGenerateDescription}
+                        disabled={aiGenerating}
+                        className="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold flex items-center gap-1.5 transition-colors border border-outline-variant/30"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${aiGenerating ? 'animate-spin' : ''}`} />
+                        <span>Regenerate</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleApplyGeneratedDescription}
+                        className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all shadow-md transform active:scale-95"
+                      >
+                        <Check className="w-4 h-4 text-green-400" />
+                        <span>Use This Description</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Core Info */}

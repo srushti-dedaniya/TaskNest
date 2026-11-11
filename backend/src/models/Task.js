@@ -9,6 +9,13 @@ const assignmentSchema = new mongoose.Schema(
       default: 'assigned',
       index: true,
     },
+    remindersSent: {
+      type: [String],
+      default: [],
+    },
+    lastReminderAt: {
+      type: Date,
+    },
   },
   { _id: false }
 )

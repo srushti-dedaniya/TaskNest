@@ -296,6 +296,380 @@ async function runTests() {
     assert(readRes.status === 200 && readRes.data.notification.isRead === true, 'Notification marked as read')
   }
 
+  // 7. AI Help Assistant
+  {
+    console.log('\n[Suite 7: AI Help Assistant]')
+
+    // Unauthenticated request
+    const unauthRes = await request('POST', '/api/ai/help', { message: 'How do I submit a task?' })
+    assert(unauthRes.status === 401, 'Unauthenticated AI help request rejected with 401 Unauthorized')
+
+    // Empty message validation
+    const emptyRes = await request('POST', '/api/ai/help', { message: '' }, internToken)
+    assert(emptyRes.status === 400, 'Empty message rejected with 400 Bad Request')
+
+    // Oversized message validation (> 1000 characters)
+    const longMsg = 'A'.repeat(1005)
+    const longRes = await request('POST', '/api/ai/help', { message: longMsg }, internToken)
+    assert(longRes.status === 400, 'Oversized message (> 1000 chars) rejected with 400 Bad Request')
+
+    // Intern asking "How do I submit a task?"
+    const internAsk1 = await request('POST', '/api/ai/help', { message: 'How do I submit a task?' }, internToken)
+    assert(internAsk1.status === 200, 'Intern can ask AI Help Assistant (200 OK)')
+    assert(Boolean(internAsk1.data.answer), 'AI Assistant returns an answer')
+    assert(internAsk1.data.role === 'intern', 'AI Assistant identifies intern role')
+    assert(
+      internAsk1.data.answer.toLowerCase().includes('submit') &&
+      internAsk1.data.answer.toLowerCase().includes('task'),
+      'Intern receives verified task submission instructions'
+    )
+
+    // Intern asking about points
+    const internAsk2 = await request('POST', '/api/ai/help', { message: 'How can I check my points?' }, internToken)
+    assert(internAsk2.status === 200, 'Intern can ask about points')
+    assert(
+      internAsk2.data.answer.toLowerCase().includes('points') || internAsk2.data.answer.toLowerCase().includes('xp'),
+      'Intern receives verified points guidance'
+    )
+
+    // Faculty/Admin asking "How do I assign a task to multiple interns?"
+    const adminAsk1 = await request(
+      'POST',
+      '/api/ai/help',
+      { message: 'How do I assign one task to multiple interns?' },
+      adminToken
+    )
+    assert(adminAsk1.status === 200, 'Faculty/Admin can ask AI Help Assistant (200 OK)')
+    assert(adminAsk1.data.role === 'admin', 'AI Assistant identifies admin role')
+    assert(
+      adminAsk1.data.answer.toLowerCase().includes('create task') ||
+      adminAsk1.data.answer.toLowerCase().includes('manage tasks'),
+      'Faculty receives verified multi-intern assignment instructions'
+    )
+
+    // Faculty/Admin asking about reviewing submissions
+    const adminAsk2 = await request(
+      'POST',
+      '/api/ai/help',
+      { message: 'How can I review submissions?' },
+      adminToken
+    )
+    assert(adminAsk2.status === 200, 'Faculty can ask about reviewing submissions')
+    assert(
+      adminAsk2.data.answer.toLowerCase().includes('submission') ||
+      adminAsk2.data.answer.toLowerCase().includes('evaluate'),
+      'Faculty receives verified submission review instructions'
+    )
+
+    // Suggested questions endpoint
+    const internSugg = await request('GET', '/api/ai/suggested-questions', null, internToken)
+    assert(internSugg.status === 200, 'Can retrieve suggested questions for intern')
+    assert(Array.isArray(internSugg.data.questions) && internSugg.data.questions.length >= 5, 'Intern has at least 5 suggested questions')
+    assert(internSugg.data.questions.some((q) => q.includes('submit a task')), 'Intern suggested questions include task submission')
+
+    const adminSugg = await request('GET', '/api/ai/suggested-questions', null, adminToken)
+    assert(adminSugg.status === 200, 'Can retrieve suggested questions for admin')
+    assert(adminSugg.data.questions.some((q) => q.includes('multiple interns')), 'Admin suggested questions include multi-intern assignment')
+  }
+
+  // 8. Task Deadline Reminder System
+  {
+    console.log('\n[Suite 8: Task Deadline Reminder System]')
+
+    // Fetch interns from DB (testIntern1 matches internToken user Julian Vance)
+    const testIntern1 = await User.findOne({ email: 'julian.vance@tasknest.org' })
+    const testIntern2 = (await User.findOne({ role: 'intern', _id: { $ne: testIntern1._id } })) || testIntern1
+
+    // 1. Test 24h reminder
+    const deadline24h = new Date(Date.now() + 23 * 3600 * 1000).toISOString()
+    const task24hRes = await request(
+      'POST',
+      '/api/tasks',
+      {
+        title: '24h Deadline Test Task',
+        description: 'Testing 24 hours reminder trigger',
+        deadline: deadline24h,
+        type: 'daily',
+        priority: 'high',
+        points: 100,
+        assignment: { mode: 'individual', interns: [testIntern1._id.toString()] }
+      },
+      adminToken
+    )
+    assert(task24hRes.status === 201, 'Created task for 24h reminder test')
+    const task24h = task24hRes.data.task
+
+    // Trigger check
+    const check1 = await request('POST', '/api/reminders/check', {}, adminToken)
+    assert(check1.status === 200, 'Admin can trigger deadline check (POST /api/reminders/check)')
+    assert(check1.data.result.remindersSentCount >= 1, '24h Reminder sent to intern')
+
+    // Verify Notification in DB
+    const notif24h = await request('GET', '/api/notifications', null, internToken)
+    const found24h = notif24h.data.notifications.find((n) => n.type === 'TASK_DEADLINE_24H' && String(n.meta?.taskId) === String(task24h._id))
+    assert(Boolean(found24h), 'In-app notification created for TASK_DEADLINE_24H')
+    assert(Boolean(found24h?.meta?.taskId), 'Notification includes meta.taskId for direct navigation')
+
+    // 2. Test Duplicate Reminder Prevention (Idempotency)
+    const check2 = await request('POST', '/api/reminders/check', {}, adminToken)
+    assert(check2.status === 200, 'Second deadline check succeeds')
+    const notifCountAfter = await request('GET', '/api/notifications', null, internToken)
+    const matchCount = notifCountAfter.data.notifications.filter((n) => n.type === 'TASK_DEADLINE_24H' && String(n.meta?.taskId) === String(task24h._id)).length
+    assert(matchCount === 1, 'Duplicate 24h reminder prevented (exactly 1 notification exists)')
+
+    // 3. Test 1h reminder
+    const deadline1h = new Date(Date.now() + 45 * 60 * 1000).toISOString()
+    const task1hRes = await request(
+      'POST',
+      '/api/tasks',
+      {
+        title: '1h Deadline Test Task',
+        description: 'Testing 1 hour urgent reminder trigger',
+        deadline: deadline1h,
+        type: 'daily',
+        priority: 'critical',
+        points: 150,
+        assignment: { mode: 'individual', interns: [testIntern1._id.toString()] }
+      },
+      adminToken
+    )
+    assert(task1hRes.status === 201, 'Created task for 1h reminder test')
+    const task1h = task1hRes.data.task
+
+    await request('POST', '/api/reminders/check', {}, adminToken)
+    const notif1h = await request('GET', '/api/notifications', null, internToken)
+    const found1h = notif1h.data.notifications.find((n) => n.type === 'TASK_DEADLINE_1H' && String(n.meta?.taskId) === String(task1h._id))
+    assert(Boolean(found1h), 'In-app notification created for TASK_DEADLINE_1H')
+
+    // 4. Test Deadline Reached (TASK_DEADLINE_NOW)
+    const deadlineNow = new Date(Date.now() - 5 * 60 * 1000).toISOString() // 5 minutes ago
+    const taskNowRes = await request(
+      'POST',
+      '/api/tasks',
+      {
+        title: 'Deadline Reached Test Task',
+        description: 'Testing deadline reached trigger',
+        deadline: deadlineNow,
+        type: 'daily',
+        priority: 'high',
+        points: 200,
+        assignment: { mode: 'individual', interns: [testIntern1._id.toString()] }
+      },
+      adminToken
+    )
+    assert(taskNowRes.status === 201, 'Created task for deadline reached test')
+    const taskNow = taskNowRes.data.task
+
+    await request('POST', '/api/reminders/check', {}, adminToken)
+    const notifNow = await request('GET', '/api/notifications', null, internToken)
+    const foundNow = notifNow.data.notifications.find((n) => n.type === 'TASK_DEADLINE_NOW' && String(n.meta?.taskId) === String(taskNow._id))
+    assert(Boolean(foundNow), 'In-app notification created for TASK_DEADLINE_NOW')
+
+    // 5. Test Overdue Task (TASK_OVERDUE) and status update
+    const deadlineOverdue = new Date(Date.now() - 2 * 3600 * 1000).toISOString() // 2 hours ago
+    const taskOverdueRes = await request(
+      'POST',
+      '/api/tasks',
+      {
+        title: 'Overdue Task Test',
+        description: 'Testing overdue reminder and status change',
+        deadline: deadlineOverdue,
+        type: 'daily',
+        priority: 'medium',
+        points: 80,
+        assignment: { mode: 'individual', interns: [testIntern1._id.toString()] }
+      },
+      adminToken
+    )
+    assert(taskOverdueRes.status === 201, 'Created task for overdue test')
+    const taskOverdue = taskOverdueRes.data.task
+
+    await request('POST', '/api/reminders/check', {}, adminToken)
+    const notifOverdue = await request('GET', '/api/notifications', null, internToken)
+    const foundOverdue = notifOverdue.data.notifications.find((n) => n.type === 'TASK_OVERDUE' && String(n.meta?.taskId) === String(taskOverdue._id))
+    assert(Boolean(foundOverdue), 'In-app notification created for TASK_OVERDUE')
+
+    // Verify task assignment status updated to 'overdue'
+    const fetchedOverdueTask = await request('GET', `/api/tasks/${taskOverdue._id}`, null, adminToken)
+    const assignmentStatus = fetchedOverdueTask.data.task.assignments[0]?.status
+    assert(assignmentStatus === 'overdue', 'Assignment status atomically updated to overdue')
+
+    // 6. Test Completed task does NOT receive reminders
+    const futureDeadline = new Date(Date.now() + 10 * 3600 * 1000).toISOString()
+    const taskCompRes = await request(
+      'POST',
+      '/api/tasks',
+      {
+        title: 'Completed Task Not Reminded',
+        description: 'Completed tasks must never trigger reminders',
+        deadline: futureDeadline,
+        type: 'daily',
+        priority: 'low',
+        points: 50,
+        assignment: { mode: 'individual', interns: [testIntern1._id.toString()] }
+      },
+      adminToken
+    )
+    const taskComp = taskCompRes.data.task
+    // Mark as completed and backdate deadline to past
+    const pastDeadline = new Date(Date.now() - 3 * 3600 * 1000)
+    await (await import('../src/models/Task.js')).default.updateOne(
+      { _id: taskComp._id, 'assignments.intern': testIntern1._id },
+      { $set: { 'assignments.$.status': 'completed', deadline: pastDeadline } }
+    )
+
+    await request('POST', '/api/reminders/check', {}, adminToken)
+    const notifCompCheck = await request('GET', '/api/notifications', null, internToken)
+    const foundCompletedNotif = notifCompCheck.data.notifications.find(
+      (n) => String(n.meta?.taskId) === String(taskComp._id) && (n.type?.startsWith('TASK_DEADLINE_') || n.type === 'TASK_OVERDUE')
+    )
+    assert(!foundCompletedNotif, 'Completed task does NOT receive deadline or overdue reminders')
+
+    // 7. Test Multi-Intern Independent Reminders
+    if (testIntern1._id.toString() !== testIntern2._id.toString()) {
+      const futureMultiDeadline = new Date(Date.now() + 10 * 3600 * 1000).toISOString()
+      const multiTaskRes = await request(
+        'POST',
+        '/api/tasks',
+        {
+          title: 'Multi-Intern Independent Reminders',
+          description: 'Testing independent reminders per intern',
+          deadline: futureMultiDeadline,
+          type: 'daily',
+          priority: 'high',
+          points: 120,
+          assignment: { mode: 'individual', interns: [testIntern1._id.toString(), testIntern2._id.toString()] }
+        },
+        adminToken
+      )
+      const multiTask = multiTaskRes.data.task
+
+      // Mark Intern 1 as completed, leave Intern 2 as assigned, backdate deadline to past
+      const pastMultiDeadline = new Date(Date.now() - 2 * 3600 * 1000)
+      const TaskModel = (await import('../src/models/Task.js')).default
+      await TaskModel.updateOne(
+        { _id: multiTask._id, 'assignments.intern': testIntern1._id },
+        { $set: { 'assignments.$.status': 'completed', deadline: pastMultiDeadline } }
+      )
+
+      await request('POST', '/api/reminders/check', {}, adminToken)
+
+      // Intern 1 should have NO overdue reminder
+      const notifs1 = await request('GET', '/api/notifications', null, internToken)
+      const foundMulti1 = notifs1.data.notifications.find(
+        (n) => String(n.meta?.taskId) === String(multiTask._id) && (n.type?.startsWith('TASK_DEADLINE_') || n.type === 'TASK_OVERDUE')
+      )
+      assert(!foundMulti1, 'Completed intern does not receive reminder in multi-intern task')
+
+      // Intern 2 should have overdue reminder in DB
+      const NotificationModel = (await import('../src/models/Notification.js')).default
+      const notif2 = await NotificationModel.findOne({ user: testIntern2._id, 'meta.taskId': multiTask._id, type: 'TASK_OVERDUE' })
+      assert(Boolean(notif2), 'Pending intern independently receives TASK_OVERDUE in multi-intern task')
+    }
+
+    // 8. Test Intern Personal Schedule Endpoint
+    const schedRes = await request('GET', '/api/reminders/my-schedule', null, internToken)
+    assert(schedRes.status === 200, 'Intern can retrieve deadline schedule (GET /api/reminders/my-schedule)')
+    assert(Array.isArray(schedRes.data.schedule), 'Schedule returned as an array')
+    assert(schedRes.data.schedule.length > 0, 'Schedule contains assigned tasks')
+    assert(Boolean(schedRes.data.schedule[0].label), 'Schedule items contain human-readable deadline label')
+
+    // 9. Test Faculty Overview Endpoint
+    const overviewRes = await request('GET', '/api/reminders/overview', null, adminToken)
+    assert(overviewRes.status === 200, 'Faculty can view deadline overview (GET /api/reminders/overview)')
+    assert(typeof overviewRes.data.overview.overdueCount === 'number', 'Overview contains overdueCount')
+    assert(Array.isArray(overviewRes.data.overview.overdueTasks), 'Overview contains overdueTasks array')
+  }
+
+  // Suite 9: AI Task Description Helper
+  console.log('\n[Suite 9: AI Task Description Helper]')
+  {
+    const internsList = await User.find({ role: 'intern' }).limit(2)
+    const internA = internsList[0]
+    const internB = internsList[1] || internsList[0]
+
+    // 1. Unauthenticated request rejected with 401
+    const unauth = await request('POST', '/api/ai/generate-task-description', {
+      taskIdea: 'Build a responsive login page using React',
+    })
+    assert(unauth.status === 401, 'Unauthenticated generate-task-description rejected with 401 Unauthorized')
+
+    // 2. Intern role rejected with 403 Forbidden
+    const internReq = await request(
+      'POST',
+      '/api/ai/generate-task-description',
+      { taskIdea: 'Build a responsive login page using React' },
+      internToken
+    )
+    assert(internReq.status === 403, 'Intern is forbidden (403) from generating task descriptions')
+
+    // 3. Validation: Empty or short taskIdea rejected with 400
+    const emptyReq = await request(
+      'POST',
+      '/api/ai/generate-task-description',
+      { taskIdea: ' ' },
+      adminToken
+    )
+    assert(emptyReq.status === 400, 'Empty task idea rejected with 400 Bad Request')
+
+    // 4. Short task idea generation succeeds with 200
+    const genRes1 = await request(
+      'POST',
+      '/api/ai/generate-task-description',
+      { taskIdea: 'Build a responsive login page using React' },
+      adminToken
+    )
+    assert(genRes1.status === 200, 'Faculty can generate task description from short idea (200 OK)')
+    assert(Boolean(genRes1.data?.title), 'Generated response contains suggested title')
+    assert(Boolean(genRes1.data?.description), 'Generated response contains structured description')
+    assert(Array.isArray(genRes1.data?.instructions), 'Generated response contains instructions array')
+    assert(
+      genRes1.data?.description.includes('Overview') &&
+      genRes1.data?.description.includes('Objectives') &&
+      genRes1.data?.description.includes('Instructions') &&
+      genRes1.data?.description.includes('Deliverables'),
+      'Generated description includes required structured sections'
+    )
+
+    // 5. Detailed task idea with category, difficulty, expectedOutcome succeeds
+    const genRes2 = await request(
+      'POST',
+      '/api/ai/generate-task-description',
+      {
+        taskIdea: 'Design JWT authentication API with Express and bcrypt',
+        category: 'Backend Security',
+        difficulty: 'Intermediate',
+        expectedOutcome: 'Working auth endpoints with JWT tokens and error handling',
+      },
+      adminToken
+    )
+    assert(genRes2.status === 200, 'Faculty can generate task description with detailed parameters (200 OK)')
+    assert(genRes2.data?.description.includes('Backend Security') || genRes2.data?.title.includes('JWT'), 'Generated task description reflects specified domain/category')
+
+    // 6. Test creating task using AI-generated output with multiple interns
+    const aiTaskRes = await request(
+      'POST',
+      '/api/tasks',
+      {
+        title: genRes1.data.title,
+        description: genRes1.data.description,
+        instructions: genRes1.data.instructions,
+        type: 'daily',
+        priority: 'high',
+        points: 250,
+        deadline: new Date(Date.now() + 86400000 * 3).toISOString(),
+        assignment: {
+          mode: 'individual',
+          interns: [String(internA._id), String(internB._id)],
+        },
+      },
+      adminToken
+    )
+    assert(aiTaskRes.status === 201, 'Admin can create task using AI-generated output (201 Created)')
+    assert(aiTaskRes.data.task.title === genRes1.data.title, 'Created task retains AI-generated title')
+    assert(aiTaskRes.data.task.assignment.interns.length === 2, 'Task assigned to multiple selected interns successfully')
+  }
+
   // Teardown
   server.close()
   await mongoose.disconnect()
