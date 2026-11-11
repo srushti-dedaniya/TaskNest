@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { taskService } from '../../services/api.js'
+import { Skeleton } from '../../components/common/Motion.jsx'
 
 export default function WeeklyGoals() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -119,9 +121,9 @@ export default function WeeklyGoals() {
           </div>
 
           {loading ? (
-            <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-              <span>Loading Weekly Goals...</span>
+            <div className="space-y-4">
+              <Skeleton className="h-44 w-full rounded-3xl" />
+              <Skeleton className="h-44 w-full rounded-3xl" />
             </div>
           ) : filteredTasks.length === 0 ? (
             <div className="bg-surface-bright rounded-3xl p-16 text-center border border-outline-variant/20 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)]">
@@ -142,7 +144,12 @@ export default function WeeklyGoals() {
             </div>
           ) : (
             filteredTasks.map((task) => (
-              <div key={task._id} className="bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] transition-all hover:shadow-md border border-outline-variant/30">
+              <motion.div
+                key={task._id}
+                whileHover={{ y: -3 }}
+                transition={{ duration: 0.2 }}
+                className="bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] transition-shadow hover:shadow-md border border-outline-variant/30"
+              >
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                   <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
@@ -170,20 +177,20 @@ export default function WeeklyGoals() {
                 <div className="mt-6 pt-4 border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-3">
                   <Link
                     to={`/intern/tasks/${task._id}`}
-                    className="px-4 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-semibold font-label-xs-caps uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-semibold font-label-xs-caps uppercase tracking-wider transition-all active:scale-[0.97] inline-flex items-center gap-1.5"
                   >
                     <span className="material-symbols-outlined text-sm">visibility</span>
                     <span>View Details</span>
                   </Link>
                   <Link
                     to={`/intern/tasks/${task._id}/submit`}
-                    className="px-5 py-2 rounded-full bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold font-label-xs-caps uppercase tracking-wider transition-all inline-flex items-center gap-1.5 shadow-xs"
+                    className="px-5 py-2 rounded-full bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold font-label-xs-caps uppercase tracking-wider transition-all active:scale-[0.97] inline-flex items-center gap-1.5 shadow-xs"
                   >
                     <span className="material-symbols-outlined text-sm">upload</span>
                     <span>Submit Work</span>
                   </Link>
                 </div>
-              </div>
+              </motion.div>
             ))
           )}
         </div>

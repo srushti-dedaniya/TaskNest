@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { authService } from '../../services/api.js'
 
 export default function Register() {
@@ -140,19 +141,33 @@ export default function Register() {
                 Create your intern account to access assigned tasks, submit your deliverables, and earn performance points.
               </p>
 
-              {errorMsg && (
-                <div className="mt-4 p-3.5 rounded-xl bg-error-container text-on-error-container text-xs flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">error</span>
-                  <span>{errorMsg}</span>
-                </div>
-              )}
+              <AnimatePresence>
+                {errorMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                    transition={{ duration: 0.2 }}
+                    className="mt-4 p-3.5 rounded-xl bg-error-container text-on-error-container text-xs flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">error</span>
+                    <span>{errorMsg}</span>
+                  </motion.div>
+                )}
 
-              {successMsg && (
-                <div className="mt-4 p-4 rounded-xl bg-secondary-container text-on-secondary-container text-xs font-semibold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
-                  <span>{successMsg}</span>
-                </div>
-              )}
+                {successMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                    transition={{ duration: 0.2 }}
+                    className="mt-4 p-4 rounded-xl bg-secondary-container text-on-secondary-container text-xs font-semibold flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
+                    <span>{successMsg}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Stepper Tabs */}

@@ -5,7 +5,7 @@ const submissionSchema = new mongoose.Schema(
     task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', required: true, index: true },
     intern: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     repoUrl: { type: String, required: true, trim: true },
-    liveUrl: { type: String, required: true, trim: true },
+    liveUrl: { type: String, trim: true, default: '' },
     notes: { type: String, trim: true, maxlength: 2000, default: '' },
     attachmentPath: { type: String, trim: true, default: '' },
     status: {

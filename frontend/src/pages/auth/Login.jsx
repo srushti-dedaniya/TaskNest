@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { authService } from '../../services/api.js'
 
@@ -248,12 +249,20 @@ export default function Login() {
                 </div>
               )}
 
-              {error && !isUnverified && (
-                <div className="p-3.5 rounded-xl bg-error-container text-on-error-container text-xs flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">error</span>
-                  <span>{error}</span>
-                </div>
-              )}
+              <AnimatePresence>
+                {error && !isUnverified && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                    transition={{ duration: 0.2 }}
+                    className="p-3.5 rounded-xl bg-error-container text-on-error-container text-xs flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">error</span>
+                    <span>{error}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">

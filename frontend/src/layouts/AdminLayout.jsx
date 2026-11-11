@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext.jsx'
+import { PageTransition } from '../components/common/Motion.jsx'
 
 export default function AdminLayout({ children }) {
   const { user, logout } = useAuth()
@@ -73,17 +75,26 @@ export default function AdminLayout({ children }) {
                   key={item.to}
                   to={item.to}
                   title={item.label}
-                  className={`group relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${
+                  className={`group relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 ${
                     active
-                      ? 'bg-primary text-on-primary shadow-sm'
+                      ? 'text-on-primary'
                       : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
-                  {item.badge && (
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-secondary" />
+                  {active && (
+                    <motion.div
+                      layoutId="adminNavActivePill"
+                      className="absolute inset-0 rounded-full bg-primary shadow-sm"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
                   )}
-                  <span className="absolute left-16 px-2.5 py-1 bg-primary text-on-primary rounded font-label-xs-caps text-[11px] uppercase tracking-wider opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md z-50">
+                  <span className="relative z-10 material-symbols-outlined text-[22px] transition-transform duration-200 group-hover:scale-110">
+                    {item.icon}
+                  </span>
+                  {item.badge && (
+                    <span className="relative z-10 absolute top-2 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-low" />
+                  )}
+                  <span className="absolute left-16 px-2.5 py-1 bg-primary text-on-primary rounded font-label-xs-caps text-[11px] uppercase tracking-wider opacity-0 pointer-events-none group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 whitespace-nowrap shadow-md z-50">
                     {item.label}
                   </span>
                 </Link>
@@ -237,7 +248,13 @@ export default function AdminLayout({ children }) {
 
       {/* Main Content Viewport */}
       <div className="md:pl-28 pt-24 px-4 md:px-8 pb-24 min-h-screen">
-        <main className="max-w-[1440px] mx-auto w-full">{children}</main>
+        <main className="max-w-[1440px] mx-auto w-full">
+          <AnimatePresence mode="wait">
+            <PageTransition key={location.pathname}>
+              {children}
+            </PageTransition>
+          </AnimatePresence>
+        </main>
       </div>
 
       {/* Mobile Bottom Navigation Bar */}

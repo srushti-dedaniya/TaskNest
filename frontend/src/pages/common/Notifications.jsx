@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { notificationService } from '../../services/api.js'
+import { Skeleton } from '../../components/common/Motion.jsx'
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([])
@@ -106,7 +108,7 @@ export default function Notifications() {
             <button
               type="button"
               onClick={markAllRead}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-md text-xs transition-colors border border-outline-variant/30"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-md text-xs transition-all active:scale-[0.97] border border-outline-variant/30"
             >
               <span className="material-symbols-outlined text-[16px]">done_all</span>
               <span>Mark All Read ({unreadCount})</span>
@@ -129,7 +131,7 @@ export default function Notifications() {
             key={tab.id}
             type="button"
             onClick={() => setFilter(tab.id)}
-            className={`px-4 py-1.5 rounded-full font-label-xs-caps text-[11px] uppercase tracking-wider transition-all ${
+            className={`px-4 py-1.5 rounded-full font-label-xs-caps text-[11px] uppercase tracking-wider transition-all active:scale-[0.97] ${
               filter === tab.id
                 ? 'bg-primary text-on-primary shadow-xs font-semibold'
                 : 'text-on-surface-variant hover:text-primary'
@@ -143,9 +145,10 @@ export default function Notifications() {
       {/* Notifications Feed */}
       <div className="space-y-3">
         {loading ? (
-          <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-            <span>Synchronizing Signals...</span>
+          <div className="space-y-3">
+            <Skeleton className="h-24 w-full rounded-2xl" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
           </div>
         ) : loadError ? (
           <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -164,13 +167,15 @@ export default function Notifications() {
           </div>
         ) : (
           filteredNotifications.map((notif) => (
-            <div
+            <motion.div
               key={notif.id}
               onClick={() => markItemRead(notif.id)}
-              className={`p-5 md:p-6 rounded-2xl border transition-all flex items-start justify-between gap-4 cursor-pointer ${
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.18 }}
+              className={`p-5 md:p-6 rounded-2xl border transition-colors flex items-start justify-between gap-4 cursor-pointer ${
                 notif.read
-                  ? 'bg-surface-bright border-outline-variant/20 opacity-80 hover:opacity-100'
-                  : 'bg-surface-container-low border-secondary/40 shadow-sm'
+                  ? 'bg-surface-bright border-outline-variant/20 opacity-80 hover:opacity-100 hover:shadow-xs'
+                  : 'bg-surface-container-low border-secondary/40 shadow-sm hover:shadow-md'
               }`}
             >
               <div className="flex items-start gap-4 flex-1">
@@ -229,7 +234,7 @@ export default function Notifications() {
                   </Link>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))
         )}
       </div>

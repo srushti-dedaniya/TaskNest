@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { taskService, submissionService } from '../../services/api.js'
 import { MOCK_TASKS } from '../../mock/mockData.js'
 
@@ -126,19 +127,33 @@ export default function SubmitTask() {
         </Link>
       </section>
 
-      {error && (
-        <div className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
-          <span>{error}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span>{error}</span>
+          </motion.div>
+        )}
 
-      {success && (
-        <div className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2 animate-bounce">
-          <span className="material-symbols-outlined text-[18px]">verified</span>
-          <span>Deliverable dispatched to review queue! Redirecting to My Submissions...</span>
-        </div>
-      )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2 shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[18px]">verified</span>
+            <span>Deliverable dispatched to review queue! Redirecting to My Submissions...</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left: Submission Form */}
@@ -246,7 +261,7 @@ export default function SubmitTask() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 px-6 rounded-full bg-primary text-on-primary font-title-md text-sm hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 px-6 rounded-full bg-primary text-on-primary font-title-md text-sm hover:bg-primary-container transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {submitting ? (
                 <>

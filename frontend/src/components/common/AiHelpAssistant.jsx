@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { aiService } from '../../services/aiService.js'
 import {
@@ -329,128 +330,143 @@ export default function AiHelpAssistant() {
   return (
     <>
       {/* Floating Action Button */}
-      {!isOpen && (
-        <button
-          onClick={() => {
-            setIsOpen(true)
-            setIsMinimized(false)
-          }}
-          aria-label="Open TaskNest AI Help Assistant"
-          className="fixed bottom-6 right-6 z-50 group flex items-center gap-2.5 px-4 py-3 bg-[#74593f] hover:bg-[#5a422a] text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#74593f]/30"
-        >
-          <div className="relative flex items-center justify-center">
-            <Bot className="w-5 h-5 text-[#fed9b8]" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#74593f] animate-pulse" />
-          </div>
-          <span className="text-xs font-semibold tracking-wide font-serif hidden sm:inline">
-            TaskNest Help
-          </span>
-          <Sparkles className="w-4 h-4 text-[#ffdcbd] opacity-80 group-hover:rotate-12 transition-transform" />
-        </button>
-      )}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.button
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              setIsOpen(true)
+              setIsMinimized(false)
+            }}
+            aria-label="Open TaskNest AI Help Assistant"
+            className="fixed bottom-6 right-6 z-50 group flex items-center gap-2.5 px-4 py-3 bg-[#74593f] hover:bg-[#5a422a] text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 animate-gentle-float focus:outline-none focus:ring-4 focus:ring-[#74593f]/30"
+          >
+            <div className="relative flex items-center justify-center">
+              <Bot className="w-5 h-5 text-[#fed9b8]" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#74593f] animate-pulse" />
+            </div>
+            <span className="text-xs font-semibold tracking-wide font-serif hidden sm:inline">
+              TaskNest Help
+            </span>
+            <Sparkles className="w-4 h-4 text-[#ffdcbd] opacity-80 group-hover:rotate-12 transition-transform" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Floating Chat Panel */}
-      {isOpen && (
-        <div
-          className={`fixed right-4 sm:right-6 bottom-4 sm:bottom-6 z-50 w-[calc(100vw-2rem)] sm:w-[410px] bg-[#fff8f2] border border-[#e8e2d7] rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
-            isMinimized ? 'h-14' : 'h-[550px] max-h-[85vh]'
-          }`}
-          style={{ backdropFilter: 'blur(16px)' }}
-        >
-          {/* Header */}
-          <div className="bg-[#f7ecde] border-b border-[#e7e2d9] px-4 py-3 flex items-center justify-between select-none">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#74593f] text-[#ffdcbd] flex items-center justify-center shadow-sm">
-                <Bot className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-serif text-sm font-bold text-[#1f1b12] leading-tight">
-                    TaskNest Assistant
-                  </h3>
-                  <span
-                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
-                      isFacultyOrAdmin
-                        ? 'bg-[#fed9b8] text-[#5a422a] border-[#e3c0a0]'
-                        : 'bg-[#e8e2d7] text-[#5a422a] border-[#cbc6bc]'
-                    }`}
-                  >
-                    {isFacultyOrAdmin ? 'Faculty Guide' : 'Intern Guide'}
-                  </span>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 18, scale: 0.96 }}
+            transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
+            className={`fixed right-4 sm:right-6 bottom-4 sm:bottom-6 z-50 w-[calc(100vw-2rem)] sm:w-[410px] bg-[#fff8f2] border border-[#e8e2d7] rounded-3xl shadow-2xl flex flex-col overflow-hidden ${
+              isMinimized ? 'h-14' : 'h-[550px] max-h-[85vh]'
+            }`}
+            style={{ backdropFilter: 'blur(16px)' }}
+          >
+            {/* Header */}
+            <div className="bg-[#f7ecde] border-b border-[#e7e2d9] px-4 py-3 flex items-center justify-between select-none">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#74593f] text-[#ffdcbd] flex items-center justify-center shadow-sm">
+                  <Bot className="w-4 h-4" />
                 </div>
-                <p className="text-[11px] text-on-surface-variant flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block" />
-                  Ready to help in simple English
-                </p>
-              </div>
-            </div>
-
-            {/* Header Controls */}
-            <div className="flex items-center gap-1">
-              {!isMinimized && (
-                <button
-                  onClick={handleClearChat}
-                  title="Clear conversation"
-                  aria-label="Clear chat"
-                  className="p-1.5 text-on-surface-variant hover:text-[#1f1b12] hover:bg-[#ebe1d3] rounded-full transition-colors"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-              )}
-              <button
-                onClick={() => setIsMinimized(!isMinimized)}
-                title={isMinimized ? 'Expand' : 'Minimize'}
-                aria-label={isMinimized ? 'Expand chat' : 'Minimize chat'}
-                className="p-1.5 text-on-surface-variant hover:text-[#1f1b12] hover:bg-[#ebe1d3] rounded-full transition-colors"
-              >
-                {isMinimized ? (
-                  <ChevronDown className="w-4 h-4 rotate-180" />
-                ) : (
-                  <Minus className="w-4 h-4" />
-                )}
-              </button>
-              <button
-                onClick={() => setIsOpen(false)}
-                title="Close chat"
-                aria-label="Close chat"
-                className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-full transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Body Content (hidden when minimized) */}
-          {!isMinimized && (
-            <>
-              {/* Message List */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-gradient-to-b from-[#fff8f2] to-[#fdf2e4]/40">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col ${
-                      msg.role === 'user' ? 'items-end' : 'items-start'
-                    }`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${
-                        msg.role === 'user'
-                          ? 'bg-[#201e19] text-white rounded-br-xs'
-                          : msg.isError
-                          ? 'bg-error-container text-on-error-container border border-error/20 rounded-bl-xs'
-                          : 'bg-[#ffffff] border border-[#e8e2d7] text-[#1f1b12] rounded-bl-xs'
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-serif text-sm font-bold text-[#1f1b12] leading-tight">
+                      TaskNest Assistant
+                    </h3>
+                    <span
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+                        isFacultyOrAdmin
+                          ? 'bg-[#fed9b8] text-[#5a422a] border-[#e3c0a0]'
+                          : 'bg-[#e8e2d7] text-[#5a422a] border-[#cbc6bc]'
                       }`}
                     >
-                      {msg.role === 'assistant' && !msg.isError && (
-                        <div className="flex items-center gap-1.5 mb-1 text-[11px] font-semibold text-[#74593f]">
-                          <Sparkles className="w-3 h-3 text-[#74593f]" />
-                          <span>TaskNest Assistant</span>
-                        </div>
-                      )}
-                      {renderMessageContent(msg.content)}
-                    </div>
+                      {isFacultyOrAdmin ? 'Faculty Guide' : 'Intern Guide'}
+                    </span>
                   </div>
-                ))}
+                  <p className="text-[11px] text-on-surface-variant flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block" />
+                    Ready to help in simple English
+                  </p>
+                </div>
+              </div>
+
+              {/* Header Controls */}
+              <div className="flex items-center gap-1">
+                {!isMinimized && (
+                  <button
+                    onClick={handleClearChat}
+                    title="Clear conversation"
+                    aria-label="Clear chat"
+                    className="p-1.5 text-on-surface-variant hover:text-[#1f1b12] hover:bg-[#ebe1d3] rounded-full transition-colors active:scale-95"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsMinimized(!isMinimized)}
+                  title={isMinimized ? 'Expand' : 'Minimize'}
+                  aria-label={isMinimized ? 'Expand chat' : 'Minimize chat'}
+                  className="p-1.5 text-on-surface-variant hover:text-[#1f1b12] hover:bg-[#ebe1d3] rounded-full transition-colors active:scale-95"
+                >
+                  {isMinimized ? (
+                    <ChevronDown className="w-4 h-4 rotate-180" />
+                  ) : (
+                    <Minus className="w-4 h-4" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  title="Close chat"
+                  aria-label="Close chat"
+                  className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-full transition-colors active:scale-95"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Body Content (hidden when minimized) */}
+            {!isMinimized && (
+              <>
+                {/* Message List */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-gradient-to-b from-[#fff8f2] to-[#fdf2e4]/40">
+                  {messages.map((msg) => (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+                      className={`flex flex-col ${
+                        msg.role === 'user' ? 'items-end' : 'items-start'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${
+                          msg.role === 'user'
+                            ? 'bg-[#201e19] text-white rounded-br-xs'
+                            : msg.isError
+                            ? 'bg-error-container text-on-error-container border border-error/20 rounded-bl-xs'
+                            : 'bg-[#ffffff] border border-[#e8e2d7] text-[#1f1b12] rounded-bl-xs'
+                        }`}
+                      >
+                        {msg.role === 'assistant' && !msg.isError && (
+                          <div className="flex items-center gap-1.5 mb-1 text-[11px] font-semibold text-[#74593f]">
+                            <Sparkles className="w-3 h-3 text-[#74593f]" />
+                            <span>TaskNest Assistant</span>
+                          </div>
+                        )}
+                        {renderMessageContent(msg.content)}
+                      </div>
+                    </motion.div>
+                  ))}
 
                 {/* Loading indicator */}
                 {loading && (
@@ -537,9 +553,10 @@ export default function AiHelpAssistant() {
               </div>
             </>
           )}
-        </div>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
+  </>
   )
 }
 

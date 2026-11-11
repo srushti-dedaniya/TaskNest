@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { taskService, userService, aiService } from '../../services/api.js'
 import { Sparkles, Bot, RefreshCw, Check, ChevronDown, ChevronUp, Lightbulb } from 'lucide-react'
 
@@ -345,23 +346,37 @@ export default function CreateTask() {
         </div>
       </section>
 
-      {error && (
-        <div className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
-          <span>{error}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span>{error}</span>
+          </motion.div>
+        )}
 
-      {submitted && (
-        <div className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
-          <span>
-            {isEditing
-              ? 'Task updated successfully! Redirecting to tasks list...'
-              : 'Task successfully created and assigned! Redirecting to tasks list...'}
-          </span>
-        </div>
-      )}
+        {submitted && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
+            <span>
+              {isEditing
+                ? 'Task updated successfully! Redirecting to tasks list...'
+                : 'Task successfully created and assigned! Redirecting to tasks list...'}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Creation Form */}
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -433,12 +448,20 @@ export default function CreateTask() {
               </button>
             </div>
 
-            {aiAppliedNotification && (
-              <div className="p-3.5 rounded-xl bg-secondary-container text-on-secondary-container text-xs font-semibold flex items-center gap-2 animate-fadeIn">
-                <Check className="w-4 h-4 text-secondary shrink-0" />
-                <span>{aiAppliedNotification}</span>
-              </div>
-            )}
+            <AnimatePresence>
+              {aiAppliedNotification && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-3.5 rounded-xl bg-secondary-container text-on-secondary-container text-xs font-semibold flex items-center gap-2"
+                >
+                  <Check className="w-4 h-4 text-secondary shrink-0" />
+                  <span>{aiAppliedNotification}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {showAiHelper && (
               <div className="space-y-4 pt-1">
@@ -557,7 +580,12 @@ export default function CreateTask() {
 
                 {/* Generated Result Preview */}
                 {aiGeneratedResult && (
-                  <div className="mt-4 pt-4 border-t border-outline-variant/25 space-y-3.5 bg-surface-container-lowest/60 rounded-2xl p-4 sm:p-5 border">
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.25 }}
+                    className="mt-4 pt-4 border-t border-outline-variant/25 space-y-3.5 bg-surface-container-lowest/60 rounded-2xl p-4 sm:p-5 border"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
                         <Check className="w-3.5 h-3.5" />
@@ -615,7 +643,7 @@ export default function CreateTask() {
                         <span>Use This Description</span>
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             )}

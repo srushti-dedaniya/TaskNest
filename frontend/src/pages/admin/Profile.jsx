@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { authService } from '../../services/api.js'
 
@@ -125,19 +126,33 @@ export default function FacultyProfile() {
         </div>
       </section>
 
-      {successMsg && (
-        <div className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2 shadow-xs">
-          <span className="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
-          <span>{successMsg}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {successMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2 shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
+            <span>{successMsg}</span>
+          </motion.div>
+        )}
 
-      {errorMsg && (
-        <div className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
-          <span>{errorMsg}</span>
-        </div>
-      )}
+        {errorMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span>{errorMsg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <form onSubmit={handleSaveProfile} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Profile Card & Info (Col-7) */}

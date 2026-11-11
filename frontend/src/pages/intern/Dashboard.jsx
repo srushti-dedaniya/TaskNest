@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { taskService, submissionService, reminderService } from '../../services/api.js'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { CountUp, AnimatedProgressBar, Skeleton } from '../../components/common/Motion.jsx'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -131,9 +133,9 @@ export default function Dashboard() {
             </div>
 
             {loading ? (
-              <div className="py-6 text-center text-on-surface-variant text-xs flex items-center justify-center gap-2 bg-surface-bright rounded-2xl border border-outline-variant/20">
-                <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
-                <span>Checking upcoming deadlines...</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <Skeleton className="h-32" />
+                <Skeleton className="h-32" />
               </div>
             ) : schedule.length === 0 ? (
               <div className="bg-surface-bright rounded-2xl p-6 text-center border border-outline-variant/20">
@@ -164,8 +166,9 @@ export default function Dashboard() {
                     : 'bg-surface-container text-on-surface-variant border-outline-variant/20'
 
                   return (
-                    <div
+                    <motion.div
                       key={item.taskId}
+                      whileHover={{ y: -3, transition: { duration: 0.2 } }}
                       className={`p-4 rounded-2xl border transition-all flex flex-col justify-between gap-3 shadow-xs ${
                         isOverdue
                           ? 'bg-[#fff5f5] border-error/40'
@@ -218,7 +221,7 @@ export default function Dashboard() {
                           {isCompleted ? 'View Task' : isSubmitted ? 'View Submission' : 'Submit Task →'}
                         </Link>
                       </div>
-                    </div>
+                    </motion.div>
                   )
                 })}
               </div>
@@ -240,9 +243,9 @@ export default function Dashboard() {
             </div>
 
             {loading ? (
-              <div className="py-12 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
-                <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                <span>Synchronizing Active Deliverables...</span>
+              <div className="space-y-4">
+                <Skeleton className="h-36 rounded-3xl" />
+                <Skeleton className="h-36 rounded-3xl" />
               </div>
             ) : activeTasks.length === 0 ? (
               <div className="bg-surface-bright rounded-3xl p-12 text-center border border-outline-variant/20 shadow-xs">
@@ -257,8 +260,9 @@ export default function Dashboard() {
                   const code = t.code || `SPEC-${(t._id || id || '0842').slice(-4).toUpperCase()}`
                   const priority = t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : 'Medium'
                   return (
-                    <article
+                    <motion.article
                       key={id}
+                      whileHover={{ y: -3, transition: { duration: 0.22 } }}
                       className="group relative bg-surface-bright rounded-3xl p-6 md:p-7 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(53,51,45,0.09)] transition-all border border-outline-variant/20"
                     >
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -313,7 +317,7 @@ export default function Dashboard() {
                           </Link>
                         </div>
                       </div>
-                    </article>
+                    </motion.article>
                   )
                 })}
               </div>
@@ -353,21 +357,29 @@ export default function Dashboard() {
             </div>
 
             {/* Circular Progress & Metrics */}
-            <div className="bg-surface-container-low p-4 rounded-2xl flex items-center justify-between">
-              <div>
-                <span className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant">
-                  Completion Rate
-                </span>
-                <div className="font-display text-3xl text-primary font-medium mt-0.5">
-                  {tasks.length > 0 ? Math.round((approvedCount / tasks.length) * 100) : 0}<span className="text-sm text-secondary font-normal">%</span>
+            <div className="bg-surface-container-low p-4 rounded-2xl flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-label-xs-caps text-[10px] uppercase tracking-wider text-on-surface-variant">
+                    Completion Rate
+                  </span>
+                  <div className="font-display text-3xl text-primary font-medium mt-0.5">
+                    <CountUp value={tasks.length > 0 ? `${Math.round((approvedCount / tasks.length) * 100)}%` : '0%'} />
+                  </div>
+                  <span className="text-[11px] text-on-surface-variant mt-0.5 block">
+                    {approvedCount} of {tasks.length} tasks approved
+                  </span>
                 </div>
-                <span className="text-[11px] text-on-surface-variant mt-1 block">
-                  {approvedCount} of {tasks.length} tasks approved
-                </span>
+                <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-secondary">
+                  <span className="material-symbols-outlined text-2xl">trending_up</span>
+                </div>
               </div>
-              <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-secondary">
-                <span className="material-symbols-outlined text-2xl">trending_up</span>
-              </div>
+              <AnimatedProgressBar
+                progress={approvedCount}
+                max={tasks.length || 1}
+                className="h-2 bg-surface-container-high"
+                barClassName="bg-secondary"
+              />
             </div>
 
             {/* Remaining Points */}
@@ -385,7 +397,7 @@ export default function Dashboard() {
               </div>
               <div className="text-right">
                 <span className="font-headline-sm text-base text-secondary font-bold">
-                  {totalXP.toLocaleString()} Pts
+                  <CountUp value={`${totalXP.toLocaleString()} Pts`} />
                 </span>
               </div>
             </div>

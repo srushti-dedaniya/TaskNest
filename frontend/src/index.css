@@ -32,3 +32,55 @@ html {
   -webkit-font-smoothing: antialiased;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
+
+/* Shimmer animation for loading skeleton states */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Subtle float animation for AI Help Assistant launcher */
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-gentle-float {
+  animation: gentle-float 3.5s ease-in-out infinite;
+}
+
+/* Premium micro-interaction utility classes */
+@layer utilities {
+  .card-hover-lift {
+    transition: transform 0.22s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.22s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .card-hover-lift:hover {
+    transform: translateY(-3px);
+  }
+  .button-press-scale {
+    transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .button-press-scale:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Accessibility: Respect user's reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-gentle-float {
+    animation: none !important;
+  }
+}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { submissionService } from '../../services/api.js'
 
 export default function EvaluateSubmission() {
@@ -96,24 +97,44 @@ export default function EvaluateSubmission() {
     <div className="space-y-8">
       <div className="w-full max-w-[1400px] mx-auto flex flex-col gap-6">
         {/* Feedback Alerts */}
-        {evalSuccess && (
-          <div className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
-            <span>{evalSuccess}</span>
-          </div>
-        )}
-        {evalError && (
-          <div className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-error">error</span>
-            <span>{evalError}</span>
-          </div>
-        )}
-        {fetchError && (
-          <div className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-error">error</span>
-            <span>{fetchError}</span>
-          </div>
-        )}
+        <AnimatePresence>
+          {evalSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.99 }}
+              transition={{ duration: 0.2 }}
+              className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
+              <span>{evalSuccess}</span>
+            </motion.div>
+          )}
+          {evalError && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.99 }}
+              transition={{ duration: 0.2 }}
+              className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px] text-error">error</span>
+              <span>{evalError}</span>
+            </motion.div>
+          )}
+          {fetchError && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.99 }}
+              transition={{ duration: 0.2 }}
+              className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px] text-error">error</span>
+              <span>{fetchError}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {alreadyEvaluated && (
           <div className="p-4 rounded-2xl bg-surface-container-high border border-outline-variant/30 text-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -372,7 +393,7 @@ export default function EvaluateSubmission() {
                   type="button"
                   disabled={submitting || alreadyEvaluated}
                   onClick={() => handleEvaluate('approved')}
-                  className="flex-1 py-3 px-4 rounded-full bg-primary text-on-primary font-label-md text-xs hover:bg-primary-container hover:text-on-primary-container transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 font-semibold"
+                  className="flex-1 py-3 px-4 rounded-full bg-primary text-on-primary font-label-md text-xs hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-[0.98] shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 font-semibold"
                 >
                   {submitting && decision === 'approved' ? (
                     <>
@@ -390,7 +411,7 @@ export default function EvaluateSubmission() {
                   type="button"
                   disabled={submitting || alreadyEvaluated}
                   onClick={() => handleEvaluate('rejected')}
-                  className="flex-1 py-3 px-4 rounded-full text-xs font-label-md bg-surface-container text-error hover:bg-error-container/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50 font-semibold border border-error/20"
+                  className="flex-1 py-3 px-4 rounded-full text-xs font-label-md bg-surface-container text-error hover:bg-error-container/40 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 font-semibold border border-error/20"
                 >
                   {submitting && decision === 'rejected' ? (
                     <>

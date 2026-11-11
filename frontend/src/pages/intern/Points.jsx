@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import {
   AreaChart,
   Area,
@@ -10,6 +11,7 @@ import {
 } from 'recharts'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { userService } from '../../services/api.js'
+import { CountUp, AnimatedProgressBar, Skeleton } from '../../components/common/Motion.jsx'
 
 export default function Points() {
   const { user } = useAuth()
@@ -98,7 +100,7 @@ export default function Points() {
             </span>
             <div className="flex items-baseline gap-3">
               <span className="font-display text-5xl md:text-6xl text-primary font-medium tracking-tight">
-                {currentPoints.toLocaleString()}
+                <CountUp value={currentPoints} />
               </span>
               <span className="font-headline-sm text-2xl text-secondary font-medium">XP</span>
             </div>
@@ -107,41 +109,41 @@ export default function Points() {
             </p>
 
             {/* Progress Bar */}
-            <div className="w-full h-3 rounded-full bg-surface-container overflow-hidden mt-3">
-              <div
-                className="h-full bg-secondary rounded-full transition-all duration-500"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
+            <AnimatedProgressBar
+              progress={currentPoints % 1000}
+              max={1000}
+              className="w-full h-3 rounded-full bg-surface-container overflow-hidden mt-3"
+              barClassName="bg-secondary"
+            />
           </div>
 
           <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-4 border-t lg:border-t-0 lg:border-l border-outline-variant/30 pt-4 lg:pt-0 lg:pl-8">
-            <div className="p-4 rounded-2xl bg-surface-container-low">
+            <div className="p-4 rounded-2xl bg-surface-container-low transition-transform duration-200 hover:-translate-y-0.5">
               <span className="font-label-xs-caps text-[10px] uppercase text-on-surface-variant font-semibold block mb-1">
                 Tasks Completed
               </span>
               <span className="font-display text-2xl text-primary font-medium">
-                {stats?.approvedCount ?? ledger.length}
+                <CountUp value={stats?.approvedCount ?? ledger.length} />
               </span>
               <span className="text-[11px] text-secondary block mt-0.5">Approved Reviews</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-surface-container-low">
+            <div className="p-4 rounded-2xl bg-surface-container-low transition-transform duration-200 hover:-translate-y-0.5">
               <span className="font-label-xs-caps text-[10px] uppercase text-on-surface-variant font-semibold block mb-1">
                 Pending Reviews
               </span>
               <span className="font-display text-2xl text-primary font-medium">
-                {stats?.pending ?? 0}
+                <CountUp value={stats?.pending ?? 0} />
               </span>
               <span className="text-[11px] text-secondary block mt-0.5">Awaiting Faculty</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-surface-container-low col-span-2 sm:col-span-1">
+            <div className="p-4 rounded-2xl bg-surface-container-low col-span-2 sm:col-span-1 transition-transform duration-200 hover:-translate-y-0.5">
               <span className="font-label-xs-caps text-[10px] uppercase text-on-surface-variant font-semibold block mb-1">
                 Active Tasks
               </span>
               <span className="font-display text-2xl text-primary font-medium">
-                {stats?.taskCount ?? 0}
+                <CountUp value={stats?.taskCount ?? 0} />
               </span>
               <span className="text-[11px] text-secondary block mt-0.5">In Program</span>
             </div>
@@ -166,9 +168,7 @@ export default function Points() {
         </div>
 
         {loading ? (
-          <div className="h-72 w-full flex items-center justify-center text-xs text-on-surface-variant font-label-xs-caps uppercase">
-            Loading points...
-          </div>
+          <Skeleton className="h-72 w-full rounded-2xl" />
         ) : (
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -197,6 +197,9 @@ export default function Points() {
                   strokeWidth={3}
                   fillOpacity={1}
                   fill="url(#internXP)"
+                  isAnimationActive={true}
+                  animationDuration={1100}
+                  animationEasing="ease-out"
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -220,9 +223,11 @@ export default function Points() {
         ) : (
           <div className="space-y-3">
             {ledger.map((entry, idx) => (
-              <div
+              <motion.div
                 key={entry.id || idx}
-                className="p-4 rounded-2xl bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-outline-variant/10"
+                whileHover={{ y: -2 }}
+                transition={{ duration: 0.18 }}
+                className="p-4 rounded-2xl bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-outline-variant/10 shadow-xs hover:shadow-sm"
               >
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -240,7 +245,7 @@ export default function Points() {
                     Attested
                   </span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

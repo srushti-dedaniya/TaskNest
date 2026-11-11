@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { taskService } from '../../services/api.js'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { Skeleton } from '../../components/common/Motion.jsx'
 
 const STATUS_LABELS = {
   assigned: 'Pending',
@@ -219,9 +221,10 @@ export default function DailyTasks() {
           </div>
 
           {loading ? (
-            <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-              <span>Loading Daily Tasks...</span>
+            <div className="space-y-4">
+              <Skeleton className="h-40 rounded-3xl" />
+              <Skeleton className="h-40 rounded-3xl" />
+              <Skeleton className="h-40 rounded-3xl" />
             </div>
           ) : loadError ? (
             <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -239,7 +242,7 @@ export default function DailyTasks() {
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="mt-4 px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors"
+                  className="mt-4 px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors active:scale-95"
                 >
                   Clear Search
                 </button>
@@ -247,8 +250,9 @@ export default function DailyTasks() {
             </div>
           ) : (
             filteredTasks.map((t) => (
-              <article
+              <motion.article
                 key={t.id}
+                whileHover={{ y: -3, transition: { duration: 0.22 } }}
                 className="group relative bg-surface-bright rounded-3xl p-6 md:p-7 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(53,51,45,0.09)] transition-all border border-outline-variant/20"
               >
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -302,7 +306,7 @@ export default function DailyTasks() {
                     </Link>
                   </div>
                 </div>
-              </article>
+              </motion.article>
             ))
           )}
         </div>

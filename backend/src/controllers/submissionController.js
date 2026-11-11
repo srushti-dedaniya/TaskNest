@@ -30,18 +30,19 @@ export const createSubmission = asyncHandler(async (req, res) => {
   }
 
   const existing = await Submission.findOne({ task: task._id, intern: internId })
+  const cleanLiveUrl = (liveUrl || '').trim()
   let submission
   if (existing && existing.status !== 'rejected') {
     throw ApiError.conflict('You already have a submission for this task')
   }
   if (existing) {
-    existing.set({ repoUrl, liveUrl, notes, attachmentPath, status: 'submitted', submittedAt: new Date() })
+    existing.set({ repoUrl, liveUrl: cleanLiveUrl, notes, attachmentPath, status: 'submitted', submittedAt: new Date() })
     existing.attempted = (existing.attempted ?? 1) + 1
     submission = await existing.save()
     /* Rejected resubmission: clear the stale review so the submission can be re-evaluated */
     await Review.deleteOne({ submission: submission._id })
   } else {
-    submission = await Submission.create({ task: task._id, intern: internId, repoUrl, liveUrl, notes, attachmentPath })
+    submission = await Submission.create({ task: task._id, intern: internId, repoUrl, liveUrl: cleanLiveUrl, notes, attachmentPath })
   }
 
   const assignment = task.assignments.find((a) => String(a.intern) === String(internId))

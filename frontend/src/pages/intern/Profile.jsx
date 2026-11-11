@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { authService } from '../../services/api.js'
 import { MOCK_INTERN } from '../../mock/mockData.js'
+import { CountUp } from '../../components/common/Motion.jsx'
 export default function Profile() {
   const { user, updateUser } = useAuth()
 
@@ -69,19 +71,33 @@ export default function Profile() {
         </div>
       </section>
 
-      {saved && (
-        <div className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2 animate-bounce">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
-          <span>Profile changes saved successfully!</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {saved && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2 shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[18px]">check_circle</span>
+            <span>Profile changes saved successfully!</span>
+          </motion.div>
+        )}
 
-      {saveError && (
-        <div className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
-          <span>{saveError}</span>
-        </div>
-      )}
+        {saveError && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span>{saveError}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Grid: Profile Card + Edit Form */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -119,7 +135,9 @@ export default function Profile() {
             </div>
             <div className="flex justify-between py-1 border-b border-outline-variant/20">
               <span className="text-on-surface-variant font-label-xs-caps uppercase">Total XP:</span>
-              <span className="font-bold text-secondary">{user?.points ?? 0} XP</span>
+              <span className="font-bold text-secondary">
+                <CountUp value={user?.points ?? 0} /> XP
+              </span>
             </div>
             <div className="flex justify-between py-1 border-b border-outline-variant/20">
               <span className="text-on-surface-variant font-label-xs-caps uppercase">First Pass:</span>
@@ -236,7 +254,7 @@ export default function Profile() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-3 rounded-full bg-primary text-on-primary font-title-md text-sm hover:bg-primary-container transition-all shadow-md disabled:opacity-50"
+                className="px-6 py-3 rounded-full bg-primary text-on-primary font-title-md text-sm hover:bg-primary-container transition-all active:scale-[0.98] shadow-md disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>

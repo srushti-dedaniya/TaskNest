@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { submissionService } from '../../services/api.js'
+import { Skeleton } from '../../components/common/Motion.jsx'
 
 export default function Submissions() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -167,9 +169,10 @@ export default function Submissions() {
       {/* Submissions List */}
       <div className="space-y-4">
         {loading ? (
-          <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-            <span>Loading submissions...</span>
+          <div className="space-y-4">
+            <Skeleton className="h-44 rounded-3xl" />
+            <Skeleton className="h-44 rounded-3xl" />
+            <Skeleton className="h-44 rounded-3xl" />
           </div>
         ) : loadError ? (
           <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -191,7 +194,7 @@ export default function Submissions() {
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="mt-4 px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors"
+                className="mt-4 px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors active:scale-95"
               >
                 Clear Search
               </button>
@@ -199,8 +202,9 @@ export default function Submissions() {
           </div>
         ) : (
           filtered.map((sub) => (
-            <div
+            <motion.div
               key={sub.id}
+              whileHover={{ y: -3, transition: { duration: 0.22 } }}
               className="p-6 md:p-8 rounded-3xl bg-surface-bright shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-4 group hover:border-secondary/40 transition-all"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-outline-variant/20">
@@ -282,7 +286,7 @@ export default function Submissions() {
                   <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </Link>
               </div>
-            </div>
+            </motion.div>
           ))
         )}
       </div>

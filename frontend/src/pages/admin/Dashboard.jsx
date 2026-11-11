@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import {
   AreaChart,
   Area,
@@ -10,6 +11,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import { submissionService, taskService, reminderService } from '../../services/api.js'
+import { CountUp, Skeleton } from '../../components/common/Motion.jsx'
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([])
@@ -131,68 +133,95 @@ export default function AdminDashboard() {
 
       {/* Stats Ribbon */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors">
-          <div className="flex items-center justify-between text-on-surface-variant mb-2">
-            <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
-              Active Tasks
-            </span>
-            <span className="material-symbols-outlined text-secondary text-[20px]">assignment</span>
-          </div>
-          <div className="font-display text-4xl text-primary font-medium tracking-tight">
-            {tasks.length}
-          </div>
-          <div className="flex items-center gap-1.5 mt-2 text-xs text-secondary font-medium">
-            <span className="material-symbols-outlined text-[14px]">trending_up</span>
-            <span>Assigned across interns</span>
-          </div>
-        </div>
+        {loading ? (
+          <>
+            <Skeleton className="h-36 rounded-3xl" />
+            <Skeleton className="h-36 rounded-3xl" />
+            <Skeleton className="h-36 rounded-3xl" />
+            <Skeleton className="h-36 rounded-3xl" />
+          </>
+        ) : (
+          <>
+            <motion.div
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+              className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors"
+            >
+              <div className="flex items-center justify-between text-on-surface-variant mb-2">
+                <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
+                  Active Tasks
+                </span>
+                <span className="material-symbols-outlined text-secondary text-[20px]">assignment</span>
+              </div>
+              <div className="font-display text-4xl text-primary font-medium tracking-tight">
+                <CountUp value={tasks.length} />
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-secondary font-medium">
+                <span className="material-symbols-outlined text-[14px]">trending_up</span>
+                <span>Assigned across interns</span>
+              </div>
+            </motion.div>
 
-        <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors">
-          <div className="flex items-center justify-between text-on-surface-variant mb-2">
-            <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
-              Pending Reviews
-            </span>
-            <span className="material-symbols-outlined text-secondary text-[20px]">hourglass_empty</span>
-          </div>
-          <div className="font-display text-4xl text-primary font-medium tracking-tight">
-            {pendingReviews.length}
-          </div>
-          <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
-            <span>Awaiting review</span>
-          </div>
-        </div>
+            <motion.div
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+              className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors"
+            >
+              <div className="flex items-center justify-between text-on-surface-variant mb-2">
+                <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
+                  Pending Reviews
+                </span>
+                <span className="material-symbols-outlined text-secondary text-[20px]">hourglass_empty</span>
+              </div>
+              <div className="font-display text-4xl text-primary font-medium tracking-tight">
+                <CountUp value={pendingReviews.length} />
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
+                <span>Awaiting review</span>
+              </div>
+            </motion.div>
 
-        <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors">
-          <div className="flex items-center justify-between text-on-surface-variant mb-2">
-            <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
-              Approval Rate
-            </span>
-            <span className="material-symbols-outlined text-secondary text-[20px]">verified</span>
-          </div>
-          <div className="font-display text-4xl text-primary font-medium tracking-tight">
-            {submissions.length > 0
-              ? `${Math.round((submissions.filter((s) => s.status === 'approved').length / submissions.length) * 100)}%`
-              : '100%'}
-          </div>
-          <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
-            <span>Submissions approved</span>
-          </div>
-        </div>
+            <motion.div
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+              className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors"
+            >
+              <div className="flex items-center justify-between text-on-surface-variant mb-2">
+                <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
+                  Approval Rate
+                </span>
+                <span className="material-symbols-outlined text-secondary text-[20px]">verified</span>
+              </div>
+              <div className="font-display text-4xl text-primary font-medium tracking-tight">
+                <CountUp
+                  value={
+                    submissions.length > 0
+                      ? `${Math.round((submissions.filter((s) => s.status === 'approved').length / submissions.length) * 100)}%`
+                      : '100%'
+                  }
+                />
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
+                <span>Submissions approved</span>
+              </div>
+            </motion.div>
 
-        <div className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors">
-          <div className="flex items-center justify-between text-on-surface-variant mb-2">
-            <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
-              Interns Active
-            </span>
-            <span className="material-symbols-outlined text-secondary text-[20px]">groups</span>
-          </div>
-          <div className="font-display text-4xl text-primary font-medium tracking-tight">
-            {stats?.interns ?? 0}
-          </div>
-          <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
-            <span>Registered Interns</span>
-          </div>
-        </div>
+            <motion.div
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+              className="bg-surface-bright rounded-3xl p-6 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 hover:border-secondary/40 transition-colors"
+            >
+              <div className="flex items-center justify-between text-on-surface-variant mb-2">
+                <span className="font-label-xs-caps text-[11px] uppercase tracking-wider font-semibold">
+                  Interns Active
+                </span>
+                <span className="material-symbols-outlined text-secondary text-[20px]">groups</span>
+              </div>
+              <div className="font-display text-4xl text-primary font-medium tracking-tight">
+                <CountUp value={stats?.interns ?? 0} />
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-on-surface-variant">
+                <span>Registered Interns</span>
+              </div>
+            </motion.div>
+          </>
+        )}
       </section>
 
       {/* Deadline & Overdue Monitoring Section */}
@@ -423,6 +452,9 @@ export default function AdminDashboard() {
                   fillOpacity={1}
                   fill="url(#colorPoints)"
                   name="Cumulative XP Awarded"
+                  isAnimationActive={true}
+                  animationDuration={1100}
+                  animationEasing="ease-out"
                 />
               </AreaChart>
             </ResponsiveContainer>

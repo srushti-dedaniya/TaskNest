@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import { PageTransition } from '../components/common/Motion.jsx'
 
 export default function AuthLayout({ children }) {
   return (
@@ -29,7 +30,11 @@ export default function AuthLayout({ children }) {
 
       {/* Main Content Area */}
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 md:px-8 py-8">
-        <div className="w-full max-w-5xl mx-auto">{children}</div>
+        <div className="w-full max-w-5xl mx-auto">
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </div>
       </main>
 
       {/* Footer */}

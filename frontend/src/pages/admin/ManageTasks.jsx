@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { taskService } from '../../services/api.js'
+import { Skeleton } from '../../components/common/Motion.jsx'
 
 export default function ManageTasks() {
   const [searchParams] = useSearchParams()
@@ -190,9 +192,10 @@ export default function ManageTasks() {
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-            <span>Loading tasks...</span>
+          <div className="space-y-4 py-2">
+            <Skeleton className="h-28 rounded-2xl" />
+            <Skeleton className="h-28 rounded-2xl" />
+            <Skeleton className="h-28 rounded-2xl" />
           </div>
         ) : loadError ? (
           <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -214,7 +217,7 @@ export default function ManageTasks() {
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-surface-container text-primary text-xs font-semibold hover:bg-surface-container-high transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-surface-container text-primary text-xs font-semibold hover:bg-surface-container-high transition-colors active:scale-95"
               >
                 Clear Search
               </button>
@@ -223,8 +226,9 @@ export default function ManageTasks() {
         ) : (
           <div className="space-y-4">
             {filteredTasks.map((task) => (
-              <div
+              <motion.div
                 key={task.id}
+                whileHover={{ y: -2, transition: { duration: 0.2 } }}
                 className="group p-5 md:p-6 rounded-2xl bg-surface-container-low hover:bg-surface-container border border-outline-variant/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4"
               >
                 <div className="flex-1 min-w-0">
@@ -306,43 +310,56 @@ export default function ManageTasks() {
                     <span className="material-symbols-outlined text-[18px]">delete</span>
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-sm">
-          <div className="bg-surface-bright rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-outline-variant/40 space-y-4">
-            <div className="flex items-center gap-3 text-error">
-              <span className="material-symbols-outlined text-3xl">warning</span>
-              <h3 className="font-headline-sm text-xl text-primary font-medium">Confirm Task Removal</h3>
-            </div>
-            <p className="text-sm text-on-surface-variant">
-              Are you sure you want to delete this task? Assigned interns will be notified and this task will no longer be active.
-            </p>
-            <div className="flex items-center justify-end gap-3 pt-3">
-              <button
-                type="button"
-                onClick={() => setDeleteConfirmId(null)}
-                className="px-4 py-2 rounded-full bg-surface-container text-on-surface text-xs font-label-md hover:bg-surface-container-high transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={deleting}
-                onClick={() => handleDelete(deleteConfirmId)}
-                className="px-5 py-2 rounded-full bg-error text-on-error text-xs font-label-md hover:opacity-90 transition-opacity shadow-sm disabled:opacity-50"
-              >
-                {deleting ? 'Retracting...' : 'Yes, Delete Task'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {deleteConfirmId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 12 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 12 }}
+              transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+              className="bg-surface-bright rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-outline-variant/40 space-y-4"
+            >
+              <div className="flex items-center gap-3 text-error">
+                <span className="material-symbols-outlined text-3xl">warning</span>
+                <h3 className="font-headline-sm text-xl text-primary font-medium">Confirm Task Removal</h3>
+              </div>
+              <p className="text-sm text-on-surface-variant">
+                Are you sure you want to delete this task? Assigned interns will be notified and this task will no longer be active.
+              </p>
+              <div className="flex items-center justify-end gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirmId(null)}
+                  className="px-4 py-2 rounded-full bg-surface-container text-on-surface text-xs font-label-md hover:bg-surface-container-high transition-colors active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={() => handleDelete(deleteConfirmId)}
+                  className="px-5 py-2 rounded-full bg-error text-on-error text-xs font-label-md hover:opacity-90 transition-opacity shadow-sm disabled:opacity-50 active:scale-95"
+                >
+                  {deleting ? 'Retracting...' : 'Yes, Delete Task'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

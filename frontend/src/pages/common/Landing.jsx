@@ -1,54 +1,106 @@
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { CountUp } from '../../components/common/Motion.jsx'
+import { fadeInUp, buttonTapMotion } from '../../utils/motion.js'
 
 export default function Landing() {
   const navigate = useNavigate()
 
   return (
-    <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col justify-between">
-      <header className="w-full py-space-lg flex justify-center items-center"><div className="flex items-center gap-space-sm"><span className="font-headline-sm text-headline-sm text-primary">TaskNest</span><span className="font-label-xs-caps text-label-xs-caps text-secondary uppercase tracking-widest">Identity Access</span></div></header><main className="flex-1 flex items-center justify-center px-gutter-mobile md:px-gutter-tablet py-space-xl"><div className="flex flex-col w-full">
-      {/*Top Ambient Glow Decorator*/}
-      <div className="relative w-full max-w-7xl mx-auto px-gutter-mobile md:px-gutter-tablet">
-      <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[680px] h-[280px] bg-secondary-container/40 blur-[120px] rounded-full pointer-events-none -z-10"></div>
-      {/*Hero Narrative Header*/}
-      <section className="flex flex-col items-center text-center pt-space-md pb-space-xl">
-      <div className="inline-flex items-center gap-space-xs px-space-md py-1 rounded-full bg-surface-container shadow-sm mb-space-md">
-      <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-      <span className="font-label-xs-caps text-label-xs-caps text-secondary uppercase tracking-[0.18em]">An Artifact-Driven Internship Ecosystem</span>
-      </div>
-      <h1 className="font-display text-headline-lg md:text-display text-primary max-w-4xl tracking-tight leading-tight">
-              Manage Work. <span className="italic font-headline-lg md:font-display text-secondary">Track Growth.</span> Achieve More.
-            </h1>
-      <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-space-md">
-              The high-performance portal harmonizing intern trajectory with engineering leadership through deliberate milestone calibration.
-            </p>
-      {/*Dual Call to Action*/}
-      <div className="flex flex-wrap items-center justify-center gap-space-md mt-space-lg">
-      <button className="group relative inline-flex items-center gap-space-sm px- space-xl py-3.5 px-8 rounded-full bg-primary-container text-surface-bright font-title-md text-title-md hover:bg-primary transition-all duration-300 shadow-md hover:shadow-lg" type="button" onClick={() => navigate('/login')}><span>Get Started</span>
-      <span className="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:translate-x-1">arrow_forward</span>
-      </button>
-      <button className="inline-flex items-center gap-space-sm px-7 py-3.5 rounded-full bg-surface-container-high text-primary font-title-md text-title-md hover:bg-surface-variant transition-all duration-300" type="button">
-      <span className="material-symbols-outlined text-[18px] text-secondary">play_circle</span>
-      <span>Platform Walkthrough</span>
-      </button>
-      </div>
-      {/*Verified Metrics Pill Dock*/}
-      <div className="mt-space-xl flex flex-wrap items-center justify-center gap-y-3 gap-x-8 px-8 py-3 rounded-full bg-surface-container-low shadow-sm">
-      <div className="flex items-center gap-2">
-      <span className="font-headline-sm text-headline-sm text-primary">98.4%</span>
-      <span className="font-label-xs-caps text-label-xs-caps text-on-surface-variant uppercase tracking-wider">On-time Deliverables</span>
-      </div>
-      <span className="w-1 h-1 rounded-full bg-outline-variant hidden sm:block"></span>
-      <div className="flex items-center gap-2">
-      <span className="font-headline-sm text-headline-sm text-primary">1,420+</span>
-      <span className="font-label-xs-caps text-label-xs-caps text-on-surface-variant uppercase tracking-wider">Milestones Tracked</span>
-      </div>
-      <span className="w-1 h-1 rounded-full bg-outline-variant hidden sm:block"></span>
-      <div className="flex items-center gap-2">
-      <span className="font-headline-sm text-headline-sm text-secondary">4.9/5</span>
-      <span className="font-label-xs-caps text-label-xs-caps text-on-surface-variant uppercase tracking-wider">Mentor Rating</span>
-      </div>
-      </div>
-      </section>
+    <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col justify-between selection:bg-secondary-container selection:text-on-secondary-container">
+      <header className="w-full py-space-lg flex justify-center items-center">
+        <div className="flex items-center gap-space-sm">
+          <span className="font-headline-sm text-headline-sm text-primary">TaskNest</span>
+          <span className="font-label-xs-caps text-label-xs-caps text-secondary uppercase tracking-widest">
+            Identity Access
+          </span>
+        </div>
+      </header>
+      <main className="flex-1 flex items-center justify-center px-gutter-mobile md:px-gutter-tablet py-space-xl">
+        <div className="flex flex-col w-full">
+          {/* Top Ambient Glow Decorator */}
+          <div className="relative w-full max-w-7xl mx-auto px-gutter-mobile md:px-gutter-tablet">
+            <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[680px] h-[280px] bg-secondary-container/40 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+            {/* Hero Narrative Header */}
+            <motion.section
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+              className="flex flex-col items-center text-center pt-space-md pb-space-xl"
+            >
+              <div className="inline-flex items-center gap-space-xs px-space-md py-1 rounded-full bg-surface-container shadow-sm mb-space-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+                <span className="font-label-xs-caps text-label-xs-caps text-secondary uppercase tracking-[0.18em]">
+                  An Artifact-Driven Internship Ecosystem
+                </span>
+              </div>
+              <h1 className="font-display text-headline-lg md:text-display text-primary max-w-4xl tracking-tight leading-tight">
+                Manage Work.{' '}
+                <span className="italic font-headline-lg md:font-display text-secondary">
+                  Track Growth.
+                </span>{' '}
+                Achieve More.
+              </h1>
+              <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-space-md">
+                The high-performance portal harmonizing intern trajectory with engineering leadership through deliberate milestone calibration.
+              </p>
+
+              {/* Dual Call to Action */}
+              <div className="flex flex-wrap items-center justify-center gap-space-md mt-space-lg">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group relative inline-flex items-center gap-space-sm px- space-xl py-3.5 px-8 rounded-full bg-primary-container text-surface-bright font-title-md text-title-md hover:bg-primary transition-all duration-300 shadow-md hover:shadow-lg"
+                  type="button"
+                  onClick={() => navigate('/login')}
+                >
+                  <span>Get Started</span>
+                  <span className="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:translate-x-1">
+                    arrow_forward
+                  </span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-flex items-center gap-space-sm px-7 py-3.5 rounded-full bg-surface-container-high text-primary font-title-md text-title-md hover:bg-surface-variant transition-all duration-300"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-secondary">play_circle</span>
+                  <span>Platform Walkthrough</span>
+                </motion.button>
+              </div>
+
+              {/* Verified Metrics Pill Dock */}
+              <div className="mt-space-xl flex flex-wrap items-center justify-center gap-y-3 gap-x-8 px-8 py-3 rounded-full bg-surface-container-low shadow-sm border border-outline-variant/20">
+                <div className="flex items-center gap-2">
+                  <span className="font-headline-sm text-headline-sm text-primary">
+                    <CountUp value="98.4%" />
+                  </span>
+                  <span className="font-label-xs-caps text-label-xs-caps text-on-surface-variant uppercase tracking-wider">
+                    On-time Deliverables
+                  </span>
+                </div>
+                <span className="w-1 h-1 rounded-full bg-outline-variant hidden sm:block" />
+                <div className="flex items-center gap-2">
+                  <span className="font-headline-sm text-headline-sm text-primary">
+                    <CountUp value="1,420+" />
+                  </span>
+                  <span className="font-label-xs-caps text-label-xs-caps text-on-surface-variant uppercase tracking-wider">
+                    Milestones Tracked
+                  </span>
+                </div>
+                <span className="w-1 h-1 rounded-full bg-outline-variant hidden sm:block" />
+                <div className="flex items-center gap-2">
+                  <span className="font-headline-sm text-headline-sm text-secondary">
+                    <CountUp value="4.9/5" />
+                  </span>
+                  <span className="font-label-xs-caps text-label-xs-caps text-on-surface-variant uppercase tracking-wider">
+                    Mentor Rating
+                  </span>
+                </div>
+              </div>
+            </motion.section>
       {/*Editorial Interactive Preview Deck*/}
       <section className="w-full mb-space-xl">
       <div className="bg-surface-container-lowest rounded-xl p-space-md md:p-space-lg shadow-xl">

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { userService } from '../../services/api.js'
+import { CountUp, Skeleton } from '../../components/common/Motion.jsx'
 
 export default function InternDetails() {
   const { internId } = useParams()
@@ -91,29 +93,31 @@ export default function InternDetails() {
 
         {/* 4x Metric Stat Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-surface-bright rounded-2xl p-5 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col justify-between">
+          <div className="bg-surface-bright rounded-2xl p-5 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
             <span className="material-symbols-outlined text-[20px] text-secondary">military_tech</span>
             <div className="font-headline-sm text-2xl text-primary font-bold tracking-tight mt-2">
-              {points.toLocaleString()}<span className="text-xs text-on-surface-variant font-normal ml-1">pts</span>
+              <CountUp value={points} /><span className="text-xs text-on-surface-variant font-normal ml-1">pts</span>
             </div>
             <div className="font-label-xs-caps text-[10px] uppercase text-on-surface-variant mt-1">Total Points</div>
           </div>
 
-          <div className="bg-surface-bright rounded-2xl p-5 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col justify-between">
+          <div className="bg-surface-bright rounded-2xl p-5 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
             <span className="material-symbols-outlined text-[20px] text-secondary">verified</span>
-            <div className="font-headline-sm text-2xl text-primary font-bold tracking-tight mt-2">{approvedSubs}</div>
+            <div className="font-headline-sm text-2xl text-primary font-bold tracking-tight mt-2">
+              <CountUp value={approvedSubs} />
+            </div>
             <div className="font-label-xs-caps text-[10px] uppercase text-on-surface-variant mt-1">Approved Submissions</div>
           </div>
 
-          <div className="bg-surface-bright rounded-2xl p-5 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col justify-between">
+          <div className="bg-surface-bright rounded-2xl p-5 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
             <span className="material-symbols-outlined text-[20px] text-secondary">lightbulb</span>
             <div className="font-headline-sm text-2xl text-primary font-bold tracking-tight mt-2">
-              {totalSubs}<span className="text-xs text-on-surface-variant font-normal ml-1">total</span>
+              <CountUp value={totalSubs} /><span className="text-xs text-on-surface-variant font-normal ml-1">total</span>
             </div>
             <div className="font-label-xs-caps text-[10px] uppercase text-on-surface-variant mt-1">Total Submissions</div>
           </div>
 
-          <div className="bg-surface-bright rounded-2xl p-5 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col justify-between">
+          <div className="bg-surface-bright rounded-2xl p-5 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
             <span className="material-symbols-outlined text-[20px] text-secondary">stacked_bar_chart</span>
             <div className="font-headline-sm text-2xl text-primary font-bold tracking-tight mt-2">
               {isEmailVerified ? 'Active' : 'Pending'}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { userService } from '../../services/api.js'
+import { Skeleton } from '../../components/common/Motion.jsx'
 
 export default function InternManagement() {
   const [searchParams] = useSearchParams()
@@ -111,9 +112,10 @@ export default function InternManagement() {
           </div>
 
           {loading ? (
-            <div className="py-16 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-              <span>Loading Interns...</span>
+            <div className="space-y-3 py-4">
+              <Skeleton className="h-16 w-full rounded-2xl" />
+              <Skeleton className="h-16 w-full rounded-2xl" />
+              <Skeleton className="h-16 w-full rounded-2xl" />
             </div>
           ) : loadError ? (
             <div className="p-6 rounded-2xl bg-error-container text-on-error-container text-sm flex items-center gap-2">

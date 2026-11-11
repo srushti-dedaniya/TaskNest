@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
 
 const SETTINGS_KEY = 'tasknest_faculty_settings'
@@ -85,12 +86,20 @@ export default function FacultySettings() {
         </div>
       </section>
 
-      {savedMsg && (
-        <div className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2 shadow-xs">
-          <span className="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
-          <span>Faculty settings successfully saved!</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {savedMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ duration: 0.2 }}
+            className="p-4 rounded-2xl bg-secondary-container text-on-secondary-container text-sm flex items-center gap-2 shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
+            <span>Faculty settings successfully saved!</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Notification & Review Config (Col-7) */}
@@ -216,7 +225,7 @@ export default function FacultySettings() {
             <div className="pt-4 border-t border-outline-variant/20 space-y-3">
               <button
                 type="submit"
-                className="w-full py-3 px-6 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2"
+                className="w-full py-3 px-6 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-[18px]">save</span>
                 <span>Save Settings</span>
