@@ -19,11 +19,22 @@ import { startDeadlineScheduler, stopDeadlineScheduler } from './services/remind
 
 const app = express()
 
-const origin = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map((s) => s.trim())
+const origin = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((s) => s.trim().replace(/\/$/, ''))
+
 app.use(
   cors({
     origin: (reqOrigin, cb) => {
-      if (!reqOrigin || origin.includes(reqOrigin) || reqOrigin?.startsWith('http://localhost')) return cb(null, true)
+      const cleanReqOrigin = reqOrigin ? reqOrigin.replace(/\/$/, '') : reqOrigin
+      if (
+        !cleanReqOrigin ||
+        origin.includes(cleanReqOrigin) ||
+        cleanReqOrigin.startsWith('http://localhost') ||
+        cleanReqOrigin.startsWith('http://127.0.0.1')
+      ) {
+        return cb(null, true)
+      }
       return cb(new Error(`CORS origin not allowed: ${reqOrigin}`))
     },
     credentials: true,
