@@ -7,7 +7,7 @@ export default function Landing() {
   const navigate = useNavigate()
 
   return (
-    <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col justify-between selection:bg-secondary-container selection:text-on-secondary-container">
+    <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col justify-between selection:bg-secondary-container selection:text-on-secondary-container overflow-x-hidden">
       <header className="w-full py-space-lg flex justify-center items-center">
         <div className="flex items-center gap-space-sm">
           <span className="font-headline-sm text-headline-sm text-primary">TaskNest</span>
@@ -47,11 +47,11 @@ export default function Landing() {
               </p>
 
               {/* Dual Call to Action */}
-              <div className="flex flex-wrap items-center justify-center gap-space-md mt-space-lg">
+              <div className="flex flex-wrap items-center justify-center gap-space-md mt-space-lg w-full max-w-md mx-auto sm:max-w-none">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="group relative inline-flex items-center gap-space-sm px- space-xl py-3.5 px-8 rounded-full bg-primary-container text-surface-bright font-title-md text-title-md hover:bg-primary transition-all duration-300 shadow-md hover:shadow-lg"
+                  className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-space-sm py-3.5 px-8 rounded-full bg-primary-container text-surface-bright font-title-md text-title-md hover:bg-primary transition-all duration-300 shadow-md hover:shadow-lg"
                   type="button"
                   onClick={() => navigate('/login')}
                 >
@@ -63,7 +63,7 @@ export default function Landing() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="inline-flex items-center gap-space-sm px-7 py-3.5 rounded-full bg-surface-container-high text-primary font-title-md text-title-md hover:bg-surface-variant transition-all duration-300"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-space-sm px-7 py-3.5 rounded-full bg-surface-container-high text-primary font-title-md text-title-md hover:bg-surface-variant transition-all duration-300"
                   type="button"
                 >
                   <span className="material-symbols-outlined text-[18px] text-secondary">play_circle</span>
@@ -72,7 +72,7 @@ export default function Landing() {
               </div>
 
               {/* Verified Metrics Pill Dock */}
-              <div className="mt-space-xl flex flex-wrap items-center justify-center gap-y-3 gap-x-8 px-8 py-3 rounded-full bg-surface-container-low shadow-sm border border-outline-variant/20">
+              <div className="mt-space-xl flex flex-wrap items-center justify-center gap-y-3 gap-x-6 sm:gap-x-8 px-4 sm:px-8 py-3 rounded-2xl sm:rounded-full bg-surface-container-low shadow-sm border border-outline-variant/20 max-w-full">
                 <div className="flex items-center gap-2">
                   <span className="font-headline-sm text-headline-sm text-primary">
                     <CountUp value="98.4%" />
@@ -105,7 +105,7 @@ export default function Landing() {
       <section className="w-full mb-space-xl">
       <div className="bg-surface-container-lowest rounded-xl p-space-md md:p-space-lg shadow-xl">
       {/*Monograph Window Bar*/}
-      <div className="flex items-center justify-between pb-space-md mb-space-md bg-surface-container-low/60 -mx-space-md -mt-space-md px-space-md md:-mx-space-lg md:-mt-space-lg md:px-space-lg pt-space-sm rounded-t-xl">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-space-md mb-space-md bg-surface-container-low/60 -mx-space-md -mt-space-md px-space-md md:-mx-space-lg md:-mt-space-lg md:px-space-lg pt-space-sm rounded-t-xl">
       <div className="flex items-center gap-2">
       <span className="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>
       <span className="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>

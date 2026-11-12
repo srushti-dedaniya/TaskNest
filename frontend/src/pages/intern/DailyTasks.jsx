@@ -290,16 +290,16 @@ export default function DailyTasks() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+                  <div className="flex items-center gap-2 self-start md:self-center shrink-0 w-full sm:w-auto">
                     <Link
                       to={`/intern/tasks/${t.id}`}
-                      className="px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30"
+                      className="flex-1 sm:flex-initial text-center px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30"
                     >
                       View Details
                     </Link>
                     <Link
                       to={`/intern/tasks/${t.id}/submit`}
-                      className="px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-xs hover:bg-primary-container transition-all shadow-xs flex items-center gap-1"
+                      className="flex-1 sm:flex-initial text-center px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-xs hover:bg-primary-container transition-all shadow-xs flex items-center justify-center gap-1"
                     >
                       <span>Submit</span>
                       <span className="material-symbols-outlined text-[14px]">arrow_forward</span>

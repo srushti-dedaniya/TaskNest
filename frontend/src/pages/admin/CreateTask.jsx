@@ -623,12 +623,12 @@ export default function CreateTask() {
                     </div>
 
                     {/* Action Buttons: Regenerate & Use This Description */}
-                    <div className="flex items-center justify-between gap-3 pt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
                       <button
                         type="button"
                         onClick={handleGenerateDescription}
                         disabled={aiGenerating}
-                        className="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold flex items-center gap-1.5 transition-colors border border-outline-variant/30"
+                        className="w-full sm:w-auto px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-outline-variant/30"
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ${aiGenerating ? 'animate-spin' : ''}`} />
                         <span>Regenerate</span>
@@ -637,7 +637,7 @@ export default function CreateTask() {
                       <button
                         type="button"
                         onClick={handleApplyGeneratedDescription}
-                        className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all shadow-md transform active:scale-95"
+                        className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md transform active:scale-95"
                       >
                         <Check className="w-4 h-4 text-green-400" />
                         <span>Use This Description</span>

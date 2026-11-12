@@ -25,12 +25,22 @@ export const register = asyncHandler(async (req, res) => {
   const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex')
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
+  /* Compute avatar initials from full name (e.g. Srushti Dedaniya => SD) */
+  const nameParts = (name || '').trim().split(/\s+/).filter(Boolean)
+  const avatarInitials =
+    nameParts.length === 1
+      ? nameParts[0][0].toUpperCase()
+      : nameParts.length > 1
+      ? `${nameParts[0][0].toUpperCase()}${nameParts[nameParts.length - 1][0].toUpperCase()}`
+      : 'IN'
+
   /* Public registration creates unverified Intern accounts only */
   const user = await User.create({
     name,
     email,
     password,
     role: 'intern',
+    avatar: avatarInitials,
     isEmailVerified: false,
     emailVerification: { tokenHash, expiresAt },
     lastVerificationSentAt: new Date(),
@@ -61,7 +71,11 @@ export const register = asyncHandler(async (req, res) => {
 
 export const verifyEmail = asyncHandler(async (req, res) => {
   const token = req.body?.token || req.query?.token
-  const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
+  const isProd = process.env.NODE_ENV === 'production'
+  const clientUrl =
+    process.env.CLIENT_URL ||
+    process.env.APP_ORIGIN ||
+    (isProd ? 'https://task-nest-sage.vercel.app' : 'http://localhost:3000')
 
   if (!token || typeof token !== 'string') {
     if (req.method === 'GET') {

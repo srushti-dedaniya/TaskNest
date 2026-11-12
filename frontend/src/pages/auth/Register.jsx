@@ -444,7 +444,7 @@ export default function Register() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end pt-4">
+                  <div className="flex flex-col sm:flex-row justify-end pt-4">
                     <button
                       type="button"
                       onClick={() => {
@@ -455,7 +455,7 @@ export default function Register() {
                         setErrorMsg('')
                         setCurrentStep(2)
                       }}
-                      className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-title-md text-sm flex items-center gap-2 hover:bg-primary-container transition-all shadow-sm"
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-primary text-on-primary font-title-md text-sm flex items-center justify-center gap-2 hover:bg-primary-container transition-all shadow-sm"
                     >
                       <span>Proceed to Engineering Specialization</span>
                       <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -634,18 +634,18 @@ export default function Register() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between pt-4">
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
                     <button
                       type="button"
                       onClick={() => setCurrentStep(1)}
-                      className="px-5 py-2 rounded-full bg-surface-container-high text-primary font-label-md text-xs hover:bg-surface-container-highest transition-all"
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-surface-container-high text-primary font-label-md text-xs hover:bg-surface-container-highest transition-all text-center"
                     >
                       Back to Step 1
                     </button>
                     <button
                       type="button"
                       onClick={() => setCurrentStep(3)}
-                      className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-title-md text-sm flex items-center gap-2 hover:bg-primary-container transition-all shadow-sm"
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-primary text-on-primary font-title-md text-sm flex items-center justify-center gap-2 hover:bg-primary-container transition-all shadow-sm"
                     >
                       <span>Proceed to Security Credentials</span>
                       <span className="material-symbols-outlined text-[16px]">arrow_forward</span>

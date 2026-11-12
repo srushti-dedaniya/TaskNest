@@ -92,31 +92,31 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Link
             to="/admin/tasks/create"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-sm"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-xs sm:text-sm hover:bg-primary-container transition-all shadow-sm flex-1 sm:flex-initial"
           >
             <span className="material-symbols-outlined text-[18px]">add_task</span>
             <span>Assign Task</span>
           </Link>
           <Link
             to="/admin/submissions"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-xs sm:text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30 flex-1 sm:flex-initial"
           >
             <span className="material-symbols-outlined text-[18px]">rate_review</span>
             <span>Submissions ({pendingReviews.length})</span>
           </Link>
           <Link
             to="/admin/profile"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-xs sm:text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30"
           >
             <span className="material-symbols-outlined text-[18px]">account_circle</span>
             <span>Profile</span>
           </Link>
           <Link
             to="/admin/settings"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-xs sm:text-sm hover:bg-surface-container-highest transition-all border border-outline-variant/30"
           >
             <span className="material-symbols-outlined text-[18px]">settings</span>
             <span>Settings</span>
@@ -408,7 +408,7 @@ export default function AdminDashboard() {
       {/* Middle Grid: Recharts Velocity Chart + Priority Queue */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Recharts Chart: Cohort XP Cadence */}
-        <div className="lg:col-span-7 bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20">
+        <div className="lg:col-span-7 bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 min-w-0 overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <div>
               <span className="font-label-xs-caps text-[11px] uppercase tracking-wider text-secondary font-semibold">

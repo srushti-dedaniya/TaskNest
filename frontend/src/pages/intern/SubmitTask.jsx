@@ -158,7 +158,7 @@ export default function SubmitTask() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left: Submission Form */}
         <div className="lg:col-span-8 bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-outline-variant/20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-outline-variant/20">
             <div>
               <span className="font-label-xs-caps text-xs uppercase tracking-wider text-secondary font-semibold">
                 Target Task // {taskCode}
@@ -167,7 +167,7 @@ export default function SubmitTask() {
                 {selectedTask.title}
               </h3>
             </div>
-            <span className="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-xs-caps text-xs font-semibold uppercase">
+            <span className="self-start sm:self-auto px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-xs-caps text-xs font-semibold uppercase shrink-0">
               +{selectedTask.points} XP Available
             </span>
           </div>

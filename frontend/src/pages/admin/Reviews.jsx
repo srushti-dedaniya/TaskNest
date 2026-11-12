@@ -139,7 +139,7 @@ export default function Reviews() {
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 p-1 bg-surface-container rounded-full self-start md:self-auto border border-outline-variant/20">
+          <div className="flex items-center gap-1.5 p-1 bg-surface-container rounded-full self-start md:self-auto border border-outline-variant/20 overflow-x-auto max-w-full">
             {[
               { id: 'all', label: 'All Reviews' },
               { id: 'pending', label: 'Pending Review' },
@@ -224,7 +224,7 @@ export default function Reviews() {
                   {sub.taskTitle}
                 </h3>
 
-                <div className="flex items-center gap-3 mt-2">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
                   <div className="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-headline-sm text-xs font-semibold">
                     {sub.internAvatar}
                   </div>

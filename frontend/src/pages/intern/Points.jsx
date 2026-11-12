@@ -170,7 +170,7 @@ export default function Points() {
         {loading ? (
           <Skeleton className="h-72 w-full rounded-2xl" />
         ) : (
-          <div className="h-72 w-full">
+          <div className="h-72 w-full min-w-0 overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={performanceHistory}>
                 <defs>

@@ -343,7 +343,7 @@ export default function AiHelpAssistant() {
               setIsMinimized(false)
             }}
             aria-label="Open TaskNest AI Help Assistant"
-            className="fixed bottom-6 right-6 z-50 group flex items-center gap-2.5 px-4 py-3 bg-[#74593f] hover:bg-[#5a422a] text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 animate-gentle-float focus:outline-none focus:ring-4 focus:ring-[#74593f]/30"
+            className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 group flex items-center gap-2.5 px-4 py-3 bg-[#74593f] hover:bg-[#5a422a] text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 animate-gentle-float focus:outline-none focus:ring-4 focus:ring-[#74593f]/30"
           >
             <div className="relative flex items-center justify-center">
               <Bot className="w-5 h-5 text-[#fed9b8]" />
@@ -365,8 +365,8 @@ export default function AiHelpAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.96 }}
             transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
-            className={`fixed right-4 sm:right-6 bottom-4 sm:bottom-6 z-50 w-[calc(100vw-2rem)] sm:w-[410px] bg-[#fff8f2] border border-[#e8e2d7] rounded-3xl shadow-2xl flex flex-col overflow-hidden ${
-              isMinimized ? 'h-14' : 'h-[550px] max-h-[85vh]'
+            className={`fixed right-3 sm:right-6 bottom-20 sm:bottom-6 z-50 w-[calc(100vw-1.5rem)] sm:w-[410px] bg-[#fff8f2] border border-[#e8e2d7] rounded-3xl shadow-2xl flex flex-col overflow-hidden ${
+              isMinimized ? 'h-14' : 'h-[550px] max-h-[75vh] sm:max-h-[85vh]'
             }`}
             style={{ backdropFilter: 'blur(16px)' }}
           >

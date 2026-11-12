@@ -145,7 +145,7 @@ export default function ManageTasks() {
           </div>
 
           {/* Type Filters */}
-          <div className="flex items-center gap-1.5 p-1 bg-surface-container rounded-full self-start md:self-auto border border-outline-variant/20">
+          <div className="flex items-center gap-1.5 p-1 bg-surface-container rounded-full self-start md:self-auto border border-outline-variant/20 overflow-x-auto max-w-full">
             {['all', 'daily', 'weekly'].map((type) => (
               <button
                 key={type}
@@ -283,7 +283,7 @@ export default function ManageTasks() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 self-start lg:self-center shrink-0">
+                <div className="flex flex-wrap items-center gap-2 self-start lg:self-center shrink-0">
                   <Link
                     to={`/admin/tasks/create?edit=${task.id}`}
                     className="px-3.5 py-2 rounded-full bg-surface-bright text-on-surface font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30 flex items-center gap-1.5"

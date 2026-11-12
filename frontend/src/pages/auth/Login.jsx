@@ -126,7 +126,7 @@ export default function Login() {
         <div className="w-full max-w-5xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden shadow-2xl bg-surface-bright border border-outline-variant/30 min-h-[600px]">
             {/* Left Architectural Monograph Panel */}
-            <div className="lg:col-span-5 relative flex flex-col justify-between p-8 md:p-10 bg-surface-container overflow-hidden min-h-[300px] lg:min-h-full">
+            <div className="lg:col-span-5 relative flex flex-col justify-between p-6 sm:p-8 md:p-10 bg-surface-container overflow-hidden min-h-[200px] sm:min-h-[260px] lg:min-h-full">
               <div
                 className="absolute inset-0 bg-cover bg-center mix-blend-multiply opacity-25"
                 style={{
@@ -162,7 +162,7 @@ export default function Login() {
             </div>
 
             {/* Right Authentication Form Panel */}
-            <div className="lg:col-span-7 p-8 md:p-12 flex flex-col justify-center space-y-6">
+            <div className="lg:col-span-7 p-6 sm:p-8 md:p-12 flex flex-col justify-center space-y-6">
               <div>
                 <h1 className="font-headline-lg text-3xl md:text-4xl text-primary font-normal">
                   Welcome back
@@ -215,12 +215,12 @@ export default function Login() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
                     <button
                       type="button"
                       disabled={resendStatus === 'dispatching'}
                       onClick={handleResendFromLogin}
-                      className="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-label-md hover:bg-primary-container transition-all flex items-center gap-1.5 shadow-xs"
+                      className="px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-label-md hover:bg-primary-container transition-all flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto"
                     >
                       {resendStatus === 'dispatching' ? (
                         <>

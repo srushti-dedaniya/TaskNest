@@ -93,10 +93,10 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 self-start lg:self-end">
+        <div className="flex items-center gap-3 self-start lg:self-end w-full sm:w-auto">
           <Link
             to="/intern/daily-tasks"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-sm"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-sm w-full sm:w-auto"
           >
             <span className="material-symbols-outlined text-[18px]">checklist</span>
             <span>View All Daily Tasks</span>
@@ -301,16 +301,16 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+                        <div className="flex items-center gap-2 self-start md:self-center shrink-0 w-full sm:w-auto">
                           <Link
                             to={`/intern/tasks/${id}`}
-                            className="px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30"
+                            className="flex-1 sm:flex-initial text-center px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-xs hover:bg-surface-container-high transition-colors border border-outline-variant/30"
                           >
                             View
                           </Link>
                           <Link
                             to={`/intern/tasks/${id}/submit`}
-                            className="px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-xs hover:bg-primary-container transition-all shadow-xs flex items-center gap-1"
+                            className="flex-1 sm:flex-initial text-center px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-xs hover:bg-primary-container transition-all shadow-xs flex items-center justify-center gap-1"
                           >
                             <span>Submit</span>
                             <span className="material-symbols-outlined text-[14px]">arrow_forward</span>

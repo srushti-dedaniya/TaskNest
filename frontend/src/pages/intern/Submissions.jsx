@@ -144,7 +144,7 @@ export default function Submissions() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 p-1.5 bg-surface-container rounded-full w-full md:w-auto border border-outline-variant/20">
+        <div className="flex items-center gap-2 p-1.5 bg-surface-container rounded-full w-full md:w-auto border border-outline-variant/20 overflow-x-auto max-w-full">
           {[
             { id: 'all', label: 'All Submissions' },
             { id: 'review', label: 'Under Review' },

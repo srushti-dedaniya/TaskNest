@@ -66,8 +66,14 @@ function baseHtmlTemplate({ title, preheader, bodyHtml, ctaText, ctaUrl, footerN
 }
 
 function getBaseUrls() {
-  const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
-  const serverUrl = process.env.SERVER_URL || 'http://localhost:5000'
+  const isProd = process.env.NODE_ENV === 'production'
+  const clientUrl =
+    process.env.CLIENT_URL ||
+    process.env.APP_ORIGIN ||
+    (isProd ? 'https://task-nest-sage.vercel.app' : 'http://localhost:3000')
+  const serverUrl =
+    process.env.SERVER_URL ||
+    (isProd ? 'https://tasknest-backend-sayc.onrender.com' : 'http://localhost:5000')
   return { clientUrl, serverUrl }
 }
 

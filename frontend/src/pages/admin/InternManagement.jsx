@@ -140,8 +140,8 @@ export default function InternManagement() {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-separate border-spacing-y-2">
+            <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
+              <table className="w-full text-left border-separate border-spacing-y-2 min-w-[560px]">
                 <thead>
                   <tr className="text-left font-label-xs-caps text-[11px] uppercase tracking-widest text-on-surface-variant">
                     <th className="pb-2 pl-4">Intern</th>
