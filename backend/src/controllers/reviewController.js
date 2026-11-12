@@ -4,7 +4,7 @@ import Submission from '../models/Submission.js'
 import Task from '../models/Task.js'
 import User from '../models/User.js'
 import Notification from '../models/Notification.js'
-import { sendEmail } from '../config/email.js'
+import emailService from '../services/emailService.js'
 
 export const evaluateSubmission = asyncHandler(async (req, res) => {
   const { submissionId } = req.params
@@ -66,13 +66,13 @@ export const evaluateSubmission = asyncHandler(async (req, res) => {
     type: decision === 'approved' ? 'points' : 'review_result',
     meta: { submissionId: sub._id, taskId: task?._id },
   })
-  const internUser = await User.findById(sub.intern, 'email')
+  const internUser = await User.findById(sub.intern, 'name email')
   if (internUser) {
-    await sendEmail({
-      to: internUser.email,
-      subject: `TaskNest — ${decision === 'approved' ? 'Submission approved' : 'Submission needs work'}`,
-      text: `${task?.title ?? 'Task'}: ${feedback}${decision === 'approved' ? ` (+${award} XP)` : ''}`,
-    })
+    await emailService
+      .sendReviewEvaluated(internUser, task, { decision, pointsAwarded: award, feedback })
+      .catch((err) => {
+        console.warn('[reviewController] Failed to send evaluation email:', err.message)
+      })
   }
 
   res.status(201).json({ review, submission: sub })

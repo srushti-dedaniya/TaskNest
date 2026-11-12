@@ -4,13 +4,14 @@ import Task from '../models/Task.js'
 import Review from '../models/Review.js'
 import User from '../models/User.js'
 import Notification from '../models/Notification.js'
-import { sendEmail } from '../config/email.js'
+import emailService from '../services/emailService.js'
 
 async function notifyAdmins(title, body, type, meta) {
-  const admins = await User.find({ role: 'admin' }, '_id')
+  const admins = await User.find({ role: 'admin' }, '_id name email')
   if (admins.length) {
     await Notification.insertMany(admins.map((a) => ({ user: a._id, title, body, type, meta })))
   }
+  return admins
 }
 
 export const createSubmission = asyncHandler(async (req, res) => {
@@ -51,17 +52,24 @@ export const createSubmission = asyncHandler(async (req, res) => {
     await task.save()
   }
 
-  await notifyAdmins(
+  const admins = await notifyAdmins(
     `New submission for review`,
     `${req.user.name} submitted ${task.title}.`,
     'submission_update',
     { submissionId: submission._id, taskId: task._id }
   )
-  await sendEmail({
-    to: req.user.email,
-    subject: 'Submission received',
-    text: `Your submission for "${task.title}" was received and is awaiting review.`,
-  })
+
+  // 1. Send confirmation to intern
+  await emailService.sendSubmissionReceived(req.user, task, req.user.name).catch(() => {})
+
+  // 2. Alert faculty administrators of new submission
+  if (Array.isArray(admins)) {
+    for (const admin of admins) {
+      if (admin.email) {
+        await emailService.sendSubmissionReceived(admin, task, req.user.name).catch(() => {})
+      }
+    }
+  }
 
   res.status(201).json({ submission })
 })

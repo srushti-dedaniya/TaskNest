@@ -15,7 +15,9 @@ import taskRoutes from './routes/taskSubmissionRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import aiRoutes from './routes/aiRoutes.js'
 import reminderRoutes from './routes/reminderRoutes.js'
+import notificationRoutes from './routes/notificationRoutes.js'
 import { startDeadlineScheduler, stopDeadlineScheduler } from './services/reminderService.js'
+import { startOutboxWorker, stopOutboxWorker, recordWebhookEvent } from './services/emailOutboxService.js'
 
 const app = express()
 
@@ -49,6 +51,15 @@ app.use('/api/ai', aiRoutes)
 app.use('/api', aiRoutes)
 app.use('/api/reminders', reminderRoutes)
 app.use('/api', reminderRoutes)
+app.use('/api/notifications', notificationRoutes)
+app.post('/api/webhooks/resend', express.json(), async (req, res) => {
+  try {
+    const result = await recordWebhookEvent(req.body)
+    res.json({ received: true, result })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
 app.use('/api', taskRoutes)
 app.use('/api', userRoutes)
 
@@ -82,10 +93,12 @@ async function start() {
     server = app.listen(PORT, () => {
       console.log(`[api] TaskNest API listening on http://localhost:${PORT}`)
       startDeadlineScheduler()
+      startOutboxWorker()
     })
 
     const shutdown = () => {
       stopDeadlineScheduler()
+      stopOutboxWorker()
       if (forwarder) forwarder.close()
       if (server) server.close()
     }

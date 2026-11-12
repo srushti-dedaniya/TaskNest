@@ -237,6 +237,9 @@ export const updateProfile = asyncHandler(async (req, res) => {
     if (!strong) throw ApiError.badRequest('New password must be at least 8 characters')
     req.user.password = req.body.newPassword
     req.user.tokenVersion = (req.user.tokenVersion ?? 0) + 1
+    await req.user.save()
+    await emailService.sendPasswordChanged(req.user).catch(() => {})
+    return res.json({ user: req.user.toSafeJSON(), passwordChanged: true })
   }
   await req.user.save()
   res.json({ user: req.user.toSafeJSON() })
@@ -266,5 +269,11 @@ export const resetPassword = asyncHandler(async (req, res) => {
   user.resetToken = undefined
   user.tokenVersion = (user.tokenVersion ?? 0) + 1
   await user.save()
+
+  /* Dispatch security confirmation email */
+  await emailService.sendPasswordChanged(user).catch((err) => {
+    console.warn('[authController] Failed to send password changed confirmation:', err.message)
+  })
+
   res.json({ message: 'Password updated. You can now sign in with your new passphrase.' })
 })

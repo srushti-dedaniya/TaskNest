@@ -4,7 +4,7 @@ import { authService } from '../../services/api.js'
 
 export default function ForgotPassword() {
   const [mode, setMode] = useState('email')
-  const [email, setEmail] = useState('v.moreau@atelier-enclave.tasknest.org')
+  const [email, setEmail] = useState('')
   const [nonce, setNonce] = useState('8F4C-C3A9-771B-92E1')
   const [nonceSpinning, setNonceSpinning] = useState(false)
   const [dispatchStatus, setDispatchStatus] = useState('idle') // 'idle' | 'encrypting' | 'dispatched'

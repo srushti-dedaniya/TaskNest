@@ -4,14 +4,13 @@ import User from '../models/User.js'
 import Submission from '../models/Submission.js'
 import Review from '../models/Review.js'
 import Notification from '../models/Notification.js'
-import { sendEmail } from '../config/email.js'
+import emailService from '../services/emailService.js'
 
 async function notifyAndEmail(users, title, body, type, meta = {}) {
   if (!users.length) return
   await Notification.insertMany(
     users.map((u) => ({ user: u._id, title, body, type, meta }))
   )
-  await Promise.all(users.map((u) => sendEmail({ to: u.email, subject: title, text: body })))
 }
 
 async function buildAssignments(task) {
@@ -55,6 +54,11 @@ export const createTask = asyncHandler(async (req, res) => {
     'task_assigned',
     { taskId: task._id }
   )
+
+  /* Dispatch branded HTML task assignment emails via outbox */
+  await emailService.sendMultipleInternTaskAssigned(audience, task).catch((err) => {
+    console.warn('[taskController] Failed to dispatch task assignment emails:', err.message)
+  })
 
   res.status(201).json({ task })
 })
@@ -114,12 +118,41 @@ export const getTask = asyncHandler(async (req, res) => {
 export const updateTask = asyncHandler(async (req, res) => {
   const task = await Task.findById(req.params.taskId)
   if (!task) throw ApiError.notFound('Task not found')
+
+  const previousInternIds = new Set((task.assignments || []).map((a) => String(a.intern)))
   const assignmentChanged = req.body.assignment !== undefined
   Object.assign(task, req.body)
+
   if (assignmentChanged) {
     await buildAssignments(task)
   }
   await task.save()
+
+  // Handle task reassignment notification (for newly added interns)
+  if (assignmentChanged) {
+    const currentInternIds = (task.assignments || []).map((a) => String(a.intern))
+    const newlyAddedIds = currentInternIds.filter((id) => !previousInternIds.has(id))
+    if (newlyAddedIds.length > 0) {
+      const newInterns = await User.find({ _id: { $in: newlyAddedIds } }, '_id name email')
+      for (const intern of newInterns) {
+        await emailService
+          .sendTaskReassigned(intern, task, { note: 'You have been assigned to this deliverable.' })
+          .catch(() => {})
+      }
+    }
+  } else if (req.body.deadline || req.body.description) {
+    // Handle task update notification (for currently assigned interns)
+    const assignedInterns = await User.find(
+      { _id: { $in: (task.assignments || []).map((a) => a.intern) } },
+      '_id name email'
+    )
+    for (const intern of assignedInterns) {
+      await emailService
+        .sendTaskUpdated(intern, task, { updateSummary: 'Deadline or instructions have been updated by faculty.' })
+        .catch(() => {})
+    }
+  }
+
   res.json({ task })
 })
 
