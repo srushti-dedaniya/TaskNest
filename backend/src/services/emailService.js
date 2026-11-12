@@ -80,7 +80,7 @@ export const emailService = {
       </p>
     `
 
-    return sendEmail({
+    return await sendEmail({
       to: user.email,
       subject,
       text: `Hello ${user.name},\n\nPlease verify your TaskNest account by clicking this link:\n${verificationUrl}\n\nDirect link:\n${directApiUrl}\n\nThis verification link is valid for 24 hours.`,
@@ -95,11 +95,37 @@ export const emailService = {
     })
   },
 
+  sendOtpEmail: async (user, otpCode, purpose = 'Verification') => {
+    const subject = `TaskNest — Your ${purpose} Code: ${otpCode}`
+    const title = `${purpose} One-Time Passcode`
+    const preheader = `Your single-use security code is ${otpCode}`
+    const bodyHtml = `
+      <p>Hello <strong>${user.name}</strong>,</p>
+      <p>Use the one-time passcode below to complete your ${purpose.toLowerCase()}:</p>
+      <div style="background:#f9f7f2;padding:18px 24px;border-radius:12px;margin:20px 0;text-align:center;">
+        <span style="font-family:monospace;font-size:32px;letter-spacing:0.25em;color:#201e19;font-weight:700;">${otpCode}</span>
+      </div>
+      <p style="font-size:12px;color:#74593f;">This code is valid for 10 minutes. For your security, do not share this code with anyone.</p>
+    `
+
+    return await sendEmail({
+      to: user.email,
+      subject,
+      text: `Hello ${user.name},\n\nYour ${purpose} code is: ${otpCode}\n\nThis code expires in 10 minutes. Do not share it with anyone.`,
+      html: baseHtmlTemplate({
+        title,
+        preheader,
+        bodyHtml,
+        footerNote: 'TaskNest Identity & Access Security',
+      }),
+    })
+  },
+
   sendWelcome: async (user) => {
     const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const dashboardUrl = `${clientUrl}/intern/dashboard`
 
-    return sendEmail({
+    return await sendEmail({
       to: user.email,
       subject: 'Welcome to TaskNest — Account Verified',
       text: `Hello ${user.name},\n\nYour TaskNest intern account is now verified. Access your dashboard: ${dashboardUrl}`,
@@ -121,7 +147,7 @@ export const emailService = {
     const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const taskUrl = `${clientUrl}/intern/tasks/${task._id || task.id}`
 
-    return sendEmail({
+    return await sendEmail({
       to: user.email,
       subject: `New Task Assigned: ${task.title}`,
       text: `Hello ${user.name},\n\nYou have been assigned a new task: ${task.title} (+${task.points} points). Deadline: ${new Date(task.deadline).toISOString().slice(0, 10)}.\n\nView details: ${taskUrl}`,
@@ -148,7 +174,7 @@ export const emailService = {
     const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const queueUrl = `${clientUrl}/admin/submissions`
 
-    return sendEmail({
+    return await sendEmail({
       to: recipient.email,
       subject: `Task Submission Received: ${task.title}`,
       text: `Submission received for "${task.title}" by intern ${internName || recipient.name}.`,
@@ -170,7 +196,7 @@ export const emailService = {
     const pointsUrl = `${clientUrl}/intern/points`
     const isApproved = review.decision === 'approved'
 
-    return sendEmail({
+    return await sendEmail({
       to: user.email,
       subject: `Task Review: ${isApproved ? 'Approved (+Points Awarded)' : 'Changes Needed'} - ${task?.title || 'Task'}`,
       text: `Hello ${user.name},\n\nYour submission for "${task?.title}" has been reviewed: ${review.decision.toUpperCase()}.\nPoints Awarded: +${review.pointsAwarded || 0} XP\nFeedback: ${review.feedback}\n\nView points: ${pointsUrl}`,
@@ -204,7 +230,7 @@ export const emailService = {
     const clientUrl = process.env.CLIENT_URL || process.env.APP_ORIGIN || 'http://localhost:3000'
     const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`
 
-    return sendEmail({
+    return await sendEmail({
       to: user.email,
       subject: 'TaskNest — Reset Your Password',
       text: `Hello ${user.name},\n\nA password reset was requested for your account. Click this link:\n${resetUrl}\n\nValid for 30 minutes. If you did not request this, please ignore this email.`,
@@ -257,7 +283,7 @@ export const emailService = {
 
     const cfg = stageConfig[stage] || stageConfig.TASK_DEADLINE_24H
 
-    return sendEmail({
+    return await sendEmail({
       to: user.email,
       subject: cfg.subject,
       text: `Hello ${user.name},\n\n${cfg.headline}\nTask: ${task.title}\nDeadline: ${formattedDeadline}\nAvailable Points: ${task.points} XP\n\nPlease view the task and submit your work here:\n${taskUrl}`,

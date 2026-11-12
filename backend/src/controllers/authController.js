@@ -39,14 +39,22 @@ export const register = asyncHandler(async (req, res) => {
   })
 
   /* Send branded HTML verification email */
-  await emailService.sendVerificationEmail(user, rawToken).catch((err) => {
-    console.error('[authController] Failed to dispatch verification email:', err.message)
+  const emailRes = await emailService.sendVerificationEmail(user, rawToken).catch((err) => {
+    console.error('[authController] Failed to dispatch verification email:', err?.message || err)
+    return { success: false, error: err?.message }
   })
 
+  let registerMessage = 'Intern registered successfully. A verification link has been dispatched to your email.'
+  if (emailRes?.error && emailRes.error.includes('only send testing emails to your own email address')) {
+    registerMessage =
+      'Intern registered successfully. In Resend testing mode, emails are delivered to the registered account email (srushtidedaniya@gmail.com).'
+  }
+
   res.status(201).json({
-    message: 'Intern registered successfully. A verification link has been sent to your email.',
+    message: registerMessage,
     email: user.email,
     isEmailVerified: false,
+    emailDelivered: emailRes?.delivered ?? false,
     user: user.toSafeJSON(),
   })
 })
@@ -144,13 +152,25 @@ export const resendVerification = asyncHandler(async (req, res) => {
   user.lastVerificationSentAt = new Date()
   await user.save()
 
-  await emailService.sendVerificationEmail(user, rawToken).catch((err) => {
-    console.error('[authController] Resend email failed:', err.message)
+  const emailRes = await emailService.sendVerificationEmail(user, rawToken).catch((err) => {
+    console.error('[authController] Resend email failed:', err?.message || err)
+    return { success: false, error: err?.message }
   })
 
+  let resendMessage = 'A fresh verification link has been dispatched to your institutional inbox.'
+  if (emailRes?.error) {
+    if (emailRes.error.includes('only send testing emails to your own email address')) {
+      resendMessage =
+        'In Resend testing mode, verification emails can only be delivered to the Resend account owner email (srushtidedaniya@gmail.com). To send to other domains, please verify a domain in the Resend dashboard.'
+    } else {
+      resendMessage = `Verification token generated, but email dispatch reported: ${emailRes.error}`
+    }
+  }
+
   res.json({
-    message: 'A fresh verification link has been dispatched to your institutional inbox.',
+    message: resendMessage,
     email: user.email,
+    delivered: emailRes?.delivered ?? false,
   })
 })
 
