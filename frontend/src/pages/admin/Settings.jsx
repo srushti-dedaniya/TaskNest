@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { getInitials } from '../../utils/avatar.js'
 
 const SETTINGS_KEY = 'tasknest_faculty_settings'
 
@@ -208,8 +209,8 @@ export default function FacultySettings() {
             <h3 className="font-headline-sm text-lg text-primary font-medium">Logged In Faculty</h3>
 
             <div className="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/20">
-              <div className="w-12 h-12 rounded-xl bg-primary text-on-primary font-headline-sm text-base flex items-center justify-center font-bold">
-                {user?.avatar || (user?.name ? user.name.slice(0, 2).toUpperCase() : 'FC')}
+              <div className="w-12 h-12 rounded-xl bg-primary text-on-primary font-headline-sm text-base flex items-center justify-center font-bold tracking-wider">
+                {getInitials(user?.name, 'FC')}
               </div>
               <div className="min-w-0">
                 <div className="font-semibold text-sm text-primary truncate">{user?.name || 'Faculty Member'}</div>

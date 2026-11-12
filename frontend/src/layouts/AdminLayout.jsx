@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext.jsx'
 import { PageTransition } from '../components/common/Motion.jsx'
+import { getInitials } from '../utils/avatar.js'
 
 export default function AdminLayout({ children }) {
   const { user, logout } = useAuth()
@@ -239,8 +240,8 @@ export default function AdminLayout({ children }) {
                 {user?.institution || 'Faculty / Admin'}
               </div>
             </div>
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-sm text-xs shadow-sm">
-              {user?.avatar || (user?.name ? user.name.slice(0, 2).toUpperCase() : 'FA')}
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-sm text-xs shadow-sm font-semibold tracking-wider">
+              {getInitials(user?.name, 'FA')}
             </div>
           </Link>
         </div>

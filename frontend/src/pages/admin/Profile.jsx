@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { authService } from '../../services/api.js'
+import { getInitials } from '../../utils/avatar.js'
 
 export default function FacultyProfile() {
   const { user, updateUser } = useAuth()
@@ -61,7 +62,7 @@ export default function FacultyProfile() {
         name: name.trim(),
         institution: institution.trim(),
         bio: bio.trim(),
-        avatar: avatar.trim() || name.trim().slice(0, 2).toUpperCase()
+        avatar: avatar.trim() || getInitials(name, 'FA')
       }
 
       if (newPassword && currentPassword) {
@@ -162,8 +163,8 @@ export default function FacultyProfile() {
 
             {/* Avatar & Display Name preview */}
             <div className="flex items-center gap-5 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/20">
-              <div className="w-16 h-16 rounded-2xl bg-primary text-on-primary font-headline-sm text-xl flex items-center justify-center font-bold shadow-sm shrink-0">
-                {avatar || (name ? name.slice(0, 2).toUpperCase() : 'FC')}
+              <div className="w-16 h-16 rounded-2xl bg-primary text-on-primary font-headline-sm text-xl flex items-center justify-center font-bold shadow-sm shrink-0 tracking-wider">
+                {avatar || getInitials(name || user?.name, 'FA')}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-base text-primary truncate">{name || 'Faculty Member'}</div>

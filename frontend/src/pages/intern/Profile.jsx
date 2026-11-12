@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext.jsx'
 import { authService } from '../../services/api.js'
 import { MOCK_INTERN } from '../../mock/mockData.js'
 import { CountUp } from '../../components/common/Motion.jsx'
+import { getInitials } from '../../utils/avatar.js'
 export default function Profile() {
   const { user, updateUser } = useAuth()
 
@@ -104,8 +105,8 @@ export default function Profile() {
         {/* Left: Identity Card */}
         <div className="lg:col-span-4 bg-surface-bright rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_-2px_rgba(53,51,45,0.05)] border border-outline-variant/20 space-y-6">
           <div className="flex flex-col items-center text-center">
-            <div className="w-24 h-24 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline-lg text-3xl shadow-md mb-4 border-4 border-surface-container">
-              {user?.avatar || MOCK_INTERN.avatar}
+            <div className="w-24 h-24 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline-lg text-3xl shadow-md mb-4 border-4 border-surface-container font-semibold tracking-wider">
+              {getInitials(name || user?.name, 'IN')}
             </div>
             <h3 className="font-headline-sm text-2xl text-primary font-medium">{name}</h3>
             <span className="font-label-xs-caps text-xs uppercase tracking-wider text-secondary font-semibold mt-1">
